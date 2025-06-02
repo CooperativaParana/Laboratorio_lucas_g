@@ -1,0 +1,12 @@
+# Core
+Django>=4.2
+djangorestframework>=3.15
+djangorestframework-authtoken>=1.1.0
+django-cors-headers>=4.0
+psycopg2-binary>=2.9
+python-decouple>=3.8  # Para manejo de variables de entorno
+gunicorn>=21.2        # Para producción si lo desplegás
+djangorestframework-simplejwt>=5.3
+black
+flake8
+gunicorn

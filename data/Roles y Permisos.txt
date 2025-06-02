@@ -1,0 +1,18 @@
+Analista de Miel: cristina
+
+Responsabilidades: Registrar muestras, realizar análisis, generar reportes
+Permisos: Acceso completo a sus análisis, solo lectura de otros analistas.
+Flujo típico: Login → Ver dashboard → Seleccionar muestra → Realizar/consultar análisis → Generar reporte
+
+Analista de Miel: Viviana
+
+Responsabilidades: Registrar muestras, realizar análisis, generar reportes
+Permisos: Acceso completo a sus análisis (fisico-quimicos)
+Flujo típico: Login → Ver Menu → Seleccionar muestra → Realizar/consultar análisis → Generar reporte
+
+Administrador: *
+
+Responsabilidades: generar reportes, agregar pendientes de analisis
+Permisos: Acceso completo a los analisis y al sistema.
+Flujo típico: Login → menu → Seleccionar muestra/filtros de muestras → Realizar/consultar análisis → Generar reporte
+                           → Agregar/corregir datos
