@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL
+  db:
+    image: postgres:15
+    container_name: apicola_db
+    environment:
+      POSTGRES_DB: apicola_lab_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456lol
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - apicola_network
+
+  # Backend Django
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    container_name: apicola_backend
+    environment:
+      - DEBUG=True
+      - SECRET_KEY=django-secret-key-for-dev
+      - DB_NAME=apicola_lab_db
+      - DB_USER=postgres
+      - DB_PASSWORD=123456lol
+      - DB_HOST=db
+      - DB_PORT=5432
+    volumes:
+      - ./backend:/app
+      - media_volume:/app/media
+      - static_volume:/app/static
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+    networks:
+      - apicola_network
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  # Frontend React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../Dockerfile.frontend
+    container_name: apicola_frontend
+    volumes:
+      - ./frontend:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - apicola_network
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000/api
+    command: npm start
+
+  # Adminer para gestión de BD (opcional)
+  adminer:
+    image: adminer
+    container_name: apicola_adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - apicola_network
+
+volumes:
+  postgres_data:
+  media_volume:
+  static_volume:
+  node_modules:
+
+networks:
+  apicola_network:
+    driver: bridge
