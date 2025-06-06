@@ -1,0 +1,1 @@
+# Aplicación modelos para manejar modelos generados con inspectdb 
