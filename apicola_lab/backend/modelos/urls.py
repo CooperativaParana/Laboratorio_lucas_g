@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ApicultorViewSet, AnalistaViewSet, ApiarioViewSet,
     TamborViewSet, EspecieViewSet, MuestraViewSet,
-    AnalisisPalinologicoViewSet, AnalisisFisicoQuimicoViewSet
+    AnalisisPalinologicoViewSet, AnalisisFisicoQuimicoViewSet,
+    EstadisticasView
 )
 
 router = DefaultRouter()
@@ -18,4 +19,5 @@ router.register(r'analisis-fisicoquimicos', AnalisisFisicoQuimicoViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('estadisticas/', EstadisticasView.as_view(), name='estadisticas'),
 ] 
