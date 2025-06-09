@@ -1,0 +1,89 @@
+from rest_framework import serializers
+from .models import (
+    Apicultor, Analista, Apiario, Tambor, TamborApiario,
+    Especie, Muestra, MuestraTambor, AnalisisPalinologico,
+    AnalisisFisicoQuimico
+)
+
+class ApicultorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Apicultor
+        fields = '__all__'
+
+class AnalistaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Analista
+        fields = ['id', 'nombres', 'apellidos', 'contacto', 'username', 'email', 'is_active']
+        read_only_fields = ['is_active']
+
+class ApiarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Apiario
+        fields = '__all__'
+
+class TamborSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tambor
+        fields = '__all__'
+
+class TamborApiarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TamborApiario
+        fields = '__all__'
+
+class EspecieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Especie
+        fields = '__all__'
+
+class MuestraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Muestra
+        fields = '__all__'
+
+class MuestraTamborSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MuestraTambor
+        fields = '__all__'
+
+class AnalisisPalinologicoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnalisisPalinologico
+        fields = '__all__'
+
+class AnalisisFisicoQuimicoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnalisisFisicoQuimico
+        fields = '__all__'
+
+# Serializers anidados para relaciones
+class ApiarioDetailSerializer(serializers.ModelSerializer):
+    apicultor = ApicultorSerializer(read_only=True)
+    
+    class Meta:
+        model = Apiario
+        fields = '__all__'
+
+class MuestraDetailSerializer(serializers.ModelSerializer):
+    analista = AnalistaSerializer(read_only=True)
+    tambores = TamborSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Muestra
+        fields = '__all__'
+
+class AnalisisPalinologicoDetailSerializer(serializers.ModelSerializer):
+    muestra = MuestraSerializer(read_only=True)
+    especie = EspecieSerializer(read_only=True)
+    
+    class Meta:
+        model = AnalisisPalinologico
+        fields = '__all__'
+
+class AnalisisFisicoQuimicoDetailSerializer(serializers.ModelSerializer):
+    analista = AnalistaSerializer(read_only=True)
+    tambor = TamborSerializer(read_only=True)
+    
+    class Meta:
+        model = AnalisisFisicoQuimico
+        fields = '__all__' 
