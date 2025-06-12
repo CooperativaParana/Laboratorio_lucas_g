@@ -1,14 +1,15 @@
 from django.db import models
-from .models import Apicultor
-from .models import Analista, AnalistaManager
-from .models import Apiario
-from .models import Tambor
-from .models import TamborApiario
-from .models import Especie
-from .models import Muestra
-from .models import MuestraTambor
-from .models import AnalisisPalinologico
-from .models import AnalisisFisicoQuimico
+from .models.Apicultor_model import Apicultor
+from .models.Analista_model import Analista
+from .models.AnalistaManager_model import AnalistaManager
+from .models.Apiario_model import Apiario
+from .models.Tambor_model import Tambor
+from .models.TamborApiario_model import TamborApiario
+from .models.Especie_model import Especie
+from .models.Muestra_model import Muestra
+from .models.MuestraTambor_model import MuestraTambor
+from .models.AnalisisPalinologico_model import AnalisisPalinologico
+from .models.AnalisisFisicoQuimico_model import AnalisisFisicoQuimico
 
 __all__ = [
     'Apicultor',

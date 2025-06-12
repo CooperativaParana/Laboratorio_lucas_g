@@ -14,4 +14,10 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar el código de la aplicación
-COPY backend/ .
+COPY backend/ /app/
+
+# Exponer el puerto
+EXPOSE 8000
+
+# Comando para ejecutar la aplicación
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
