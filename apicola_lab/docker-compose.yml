@@ -23,8 +23,8 @@ services:
   # Backend Django
   backend:
     build:
-      context: ./backend
-      dockerfile: ../Dockerfile.backend
+      context: .
+      dockerfile: Dockerfile.backend
     container_name: apicola_backend
     environment:
       - DEBUG=True
@@ -38,7 +38,6 @@ services:
       - ./backend:/app
       - media_volume:/app/media
       - static_volume:/app/static
-      - modelos_volume:/app/modelos
     ports:
       - "8001:8000"
     depends_on:
