@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from modelos.models import Muestra, Especie
+from modelos.models.Muestra_model import Muestra
+from modelos.models.Especie_model import Especie
 
 
 class AnalisisPalinologico(models.Model):

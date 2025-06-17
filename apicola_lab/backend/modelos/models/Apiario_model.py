@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from modelos.models import Apicultor  
+from modelos.models.Apicultor_model import Apicultor  
 
 
 

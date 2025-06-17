@@ -7,11 +7,19 @@ from django.db.models import Count, Avg, Sum
 from django.db.models.functions import TruncMonth, TruncYear
 from django.utils import timezone
 from datetime import timedelta
-from .models import (
-    Apicultor, Analista, Apiario, Tambor, TamborApiario,
-    Especie, Muestra, MuestraTambor, AnalisisPalinologico,
-    AnalisisFisicoQuimico
-)
+
+from .models.Analista_model import Analista
+from .models.Apiario_model import Apiario
+from .models.Apicultor_model import Apicultor
+from .models.Tambor_model import Tambor
+from .models.TamborApiario_model import TamborApiario
+from .models.Especie_model import Especie
+from .models.Muestra_model import Muestra
+from .models.MuestraTambor_model import MuestraTambor
+from .models.AnalisisPalinologico_model import AnalisisPalinologico
+from .models.AnalisisFisicoQuimico_model import AnalisisFisicoQuimico
+
+
 from .serializers import (
     ApicultorSerializer, AnalistaSerializer, ApiarioSerializer,
     TamborSerializer, TamborApiarioSerializer, EspecieSerializer,
@@ -72,6 +80,7 @@ class ApiarioViewSet(viewsets.ModelViewSet):
             'analisis_palinologicos': AnalisisPalinologico.objects.filter(
                 muestra__tambores__apiarios=apiario
             ).distinct().count(),
+
             'especies_encontradas': Especie.objects.filter(
                 analisis_palinologicos__muestra__tambores__apiarios=apiario
             ).distinct().count()

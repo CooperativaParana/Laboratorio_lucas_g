@@ -1,9 +1,14 @@
 from rest_framework import serializers
-from .models import (
-    Apicultor, Analista, Apiario, Tambor, TamborApiario,
-    Especie, Muestra, MuestraTambor, AnalisisPalinologico,
-    AnalisisFisicoQuimico
-)
+from .models.Analista_model import Analista
+from .models.Apiario_model import Apiario
+from .models.Apicultor_model import Apicultor
+from .models.Tambor_model import Tambor
+from .models.TamborApiario_model import TamborApiario
+from .models.Especie_model import Especie
+from .models.Muestra_model import Muestra
+from .models.MuestraTambor_model import MuestraTambor
+from .models.AnalisisPalinologico_model import AnalisisPalinologico
+from .models.AnalisisFisicoQuimico_model import AnalisisFisicoQuimico
 
 class ApicultorSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
-from modelos.models import AnalistaManager
+from modelos.models.AnalistaManager_model import AnalistaManager
 
 
 class Analista(AbstractBaseUser):

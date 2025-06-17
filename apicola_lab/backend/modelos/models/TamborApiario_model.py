@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
-from modelos.models import Tambor, Apiario
-
+from modelos.models.Tambor_model import Tambor
+from modelos.models.Apiario_model import Apiario
 
 
 class TamborApiario(models.Model):

@@ -1,5 +1,5 @@
 from django.db import models
-from modelos.models import Apiario
+from modelos.models.Apiario_model import Apiario
 
 
 

@@ -1,5 +1,6 @@
 from django.db import models
-from modelos.models import Analista, Tambor
+from modelos.models.Analista_model import Analista
+from modelos.models.Tambor_model import Tambor
 
 
 class AnalisisFisicoQuimico(models.Model):

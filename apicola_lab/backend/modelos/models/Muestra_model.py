@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
-from modelos.models import Analista, Tambor
+from modelos.models.Analista_model import Analista
+from modelos.models.Tambor_model import Tambor
 
 
 class Muestra(models.Model):
