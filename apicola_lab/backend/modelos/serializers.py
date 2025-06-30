@@ -92,3 +92,18 @@ class AnalisisFisicoQuimicoDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnalisisFisicoQuimico
         fields = '__all__' 
+
+class EstadisticasSerializer(serializers.Serializer):
+    estadisticas_generales = serializers.DictField()
+
+    muestras_por_mes = serializers.ListField(
+        child=serializers.DictField()
+    )
+
+    analisis_por_especie = serializers.ListField(
+        child=serializers.DictField()
+    )
+
+    humedad_por_apiario = serializers.ListField(
+        child=serializers.DictField()
+    )

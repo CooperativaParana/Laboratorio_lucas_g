@@ -5,9 +5,94 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #f7f4e9 0%, #f0e6d2 50%, #e8dcc0 100%);
+  background-attachment: fixed;
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Fondo de panal de abejas - Patrón estático bonito */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    /* Panales hexagonales */
+    linear-gradient(30deg, rgba(255, 193, 7, 0.08) 12%, transparent 12.5%, transparent 87%, rgba(255, 193, 7, 0.08) 87.5%, rgba(255, 193, 7, 0.08)),
+    linear-gradient(150deg, rgba(255, 193, 7, 0.08) 12%, transparent 12.5%, transparent 87%, rgba(255, 193, 7, 0.08) 87.5%, rgba(255, 193, 7, 0.08)),
+    /* Abejas pequeñas */
+    radial-gradient(circle at 10% 20%, #2c1810 2px, transparent 2px),
+    radial-gradient(circle at 90% 80%, #2c1810 2px, transparent 2px),
+    radial-gradient(circle at 70% 30%, #2c1810 2px, transparent 2px),
+    radial-gradient(circle at 30% 70%, #2c1810 2px, transparent 2px),
+    radial-gradient(circle at 50% 50%, #2c1810 2px, transparent 2px),
+    /* Alas de abejas */
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 8% 22%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 92% 78%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 88% 82%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 72% 28%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 68% 32%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 32% 68%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 28% 72%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 52% 48%, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    radial-gradient(circle at 48% 52%, rgba(255, 255, 255, 0.6) 1px, transparent 1px);
+  background-size: 60px 104px, 60px 104px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px;
+  background-position: 0 0, 30px 52px, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  z-index: -1;
+}
+
+/* Puntos dorados para simular miel */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 15%, rgba(255, 193, 7, 0.3) 3px, transparent 3px),
+    radial-gradient(circle at 80% 85%, rgba(255, 193, 7, 0.3) 3px, transparent 3px),
+    radial-gradient(circle at 60% 40%, rgba(255, 193, 7, 0.2) 2px, transparent 2px),
+    radial-gradient(circle at 40% 60%, rgba(255, 193, 7, 0.2) 2px, transparent 2px),
+    radial-gradient(circle at 85% 25%, rgba(255, 193, 7, 0.25) 2.5px, transparent 2.5px),
+    radial-gradient(circle at 15% 75%, rgba(255, 193, 7, 0.25) 2.5px, transparent 2.5px);
+  background-size: 300px 300px, 300px 300px, 250px 250px, 250px 250px, 280px 280px, 280px 280px;
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  z-index: -1;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Mejorar la legibilidad del texto sobre el fondo */
+.App {
+  position: relative;
+  z-index: 1;
+}
+
+/* Efecto de profundidad para las tarjetas */
+.chakra-box {
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 2px solid rgba(255, 193, 7, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(255, 193, 7, 0.2) !important;
+  border-radius: 12px;
+}
+
+/* Efecto especial para las tarjetas principales */
+.honeycomb-glow {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 2px solid rgba(255, 193, 7, 0.4) !important;
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 6px 20px rgba(255, 193, 7, 0.25) !important;
 } 

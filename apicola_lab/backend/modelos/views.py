@@ -26,7 +26,7 @@ from .serializers import (
     MuestraSerializer, MuestraTamborSerializer, AnalisisPalinologicoSerializer,
     AnalisisFisicoQuimicoSerializer, ApiarioDetailSerializer,
     MuestraDetailSerializer, AnalisisPalinologicoDetailSerializer,
-    AnalisisFisicoQuimicoDetailSerializer
+    AnalisisFisicoQuimicoDetailSerializer, EstadisticasSerializer
 )
 
 class ApicultorViewSet(viewsets.ModelViewSet):
@@ -188,6 +188,7 @@ class AnalisisFisicoQuimicoViewSet(viewsets.ModelViewSet):
 
 class EstadisticasView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = EstadisticasSerializer
 
     def get(self, request):
         # Obtener estadísticas generales
