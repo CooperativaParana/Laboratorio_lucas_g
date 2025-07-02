@@ -1,28 +1,24 @@
 from django.db import models
-from django.utils import timezone
-from modelos.models.Muestra_model import Muestra
-from modelos.models.Tambor_model import Tambor
+from modelos.models.Apiario_model import Apiario
+
 
 
 class MuestraTambor(models.Model):
-    """Tabla intermedia para la relación Muestra-Tambor"""
-    muestra = models.ForeignKey(
-        Muestra, 
-        on_delete=models.CASCADE,
-        db_column='id_muestra'
+    """Modelo para los tambores de miel"""
+    num_registro = models.CharField(max_length=50, unique=True)
+    apiarios = models.ManyToManyField(
+        Apiario, 
+        through='TamborApiario',
+        related_name='tambores'
     )
-    tambor = models.ForeignKey(
-        Tambor, 
-        on_delete=models.CASCADE,
-        db_column='id_tambor'
-    )
-    fecha_asociacion = models.DateField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'muestra_tambor'
-        unique_together = ('muestra', 'tambor')
-        verbose_name = 'Asociación Muestra-Tambor'
-        verbose_name_plural = 'Asociaciones Muestra-Tambor'
+        verbose_name = 'MuestraTambor'
+        verbose_name_plural = 'MuestrasTambores'
 
     def __str__(self):
-        return f"{self.muestra} - {self.tambor}"
+        return f"MuestraTambor {self.num_registro}"
+

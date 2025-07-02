@@ -45,7 +45,7 @@ const AnalisisPalinologico = () => {
               w="100%"
               onClick={handleAgregarMuestra}
             >
-              Agregar Muestra
+              Crear Muestra
             </Button>
             <Button
               colorScheme="green"

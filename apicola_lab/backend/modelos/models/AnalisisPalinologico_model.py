@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from modelos.models.Muestra_model import Muestra
+from modelos.models.Pool_model import Pool
 from modelos.models.Especie_model import Especie
 
 
@@ -12,11 +12,11 @@ class AnalisisPalinologico(models.Model):
         ('##', '##'),
     ]
 
-    muestra = models.ForeignKey(
-        Muestra, 
+    pool = models.ForeignKey(
+        Pool, 
         on_delete=models.CASCADE,
         related_name='analisis_palinologicos',
-        db_column='id_muestra'
+        db_column='id_pool'
     )
     especie = models.ForeignKey(
         Especie, 
@@ -48,11 +48,11 @@ class AnalisisPalinologico(models.Model):
         db_table = 'analisis_palinologico'
         verbose_name = 'Análisis Palinológico'
         verbose_name_plural = 'Análisis Palinológicos'
-        unique_together = ('muestra', 'especie')
+        unique_together = ('pool', 'especie')
         indexes = [
-            models.Index(fields=['muestra'], name='idx_analisis_muestra'),
+            models.Index(fields=['pool'], name='idx_analisis_pool'),
             models.Index(fields=['especie'], name='idx_analisis_especie'),
         ]
 
     def __str__(self):
-        return f"Análisis {self.muestra} - {self.especie}"
+        return f"Análisis {self.pool} - {self.especie}" 

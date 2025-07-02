@@ -15,7 +15,7 @@ const Home = () => {
       >
         <Stack spacing={6} align="center">
           <Text as="h1" fontSize="2xl" fontWeight="bold" mb={4}>
-            Laboratorio Apícola
+            Cooperativa Apícola Limitada del Parana
           </Text>
           <Login />
         </Stack>

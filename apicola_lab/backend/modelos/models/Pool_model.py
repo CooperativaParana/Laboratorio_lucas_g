@@ -1,21 +1,21 @@
 from django.db import models
 from django.utils import timezone
 from modelos.models.Analista_model import Analista
-from modelos.models.Tambor_model import Tambor
+from modelos.models.MuestraTambor_model import MuestraTambor
 
 
-class Muestra(models.Model):
+class Pool(models.Model):
     """Modelo para las muestras de miel"""
     analista = models.ForeignKey(
         Analista, 
         on_delete=models.RESTRICT,
-        related_name='muestras',
+        related_name='pools',
         db_column='id_analista'
     )
     tambores = models.ManyToManyField(
-        Tambor,
-        through='MuestraTambor',
-        related_name='muestras'
+        MuestraTambor,
+        through='ContienePool',
+        related_name='pools'
     )
     fecha_extraccion = models.DateField()
     fecha_analisis = models.DateField(null=True, blank=True)
@@ -25,12 +25,12 @@ class Muestra(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'muestra'
-        verbose_name = 'Muestra'
-        verbose_name_plural = 'Muestras'
+        db_table = 'pool'
+        verbose_name = 'Pool'
+        verbose_name_plural = 'Pools'
         indexes = [
-            models.Index(fields=['analista'], name='idx_muestra_analista'),
-            models.Index(fields=['fecha_extraccion', 'fecha_analisis'], name='idx_muestra_fechas'),
+            models.Index(fields=['analista'], name='idx_pool_analista'),
+            models.Index(fields=['fecha_extraccion', 'fecha_analisis'], name='idx_pool_fechas'),
         ]
 
     def clean(self):
@@ -43,4 +43,4 @@ class Muestra(models.Model):
                 )
 
     def __str__(self):
-        return f"Muestra {self.num_registro or self.id} - {self.fecha_extraccion}"
+        return f"Pool {self.num_registro or self.id} - {self.fecha_extraccion}"

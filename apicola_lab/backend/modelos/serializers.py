@@ -2,11 +2,11 @@ from rest_framework import serializers
 from .models.Analista_model import Analista
 from .models.Apiario_model import Apiario
 from .models.Apicultor_model import Apicultor
-from .models.Tambor_model import Tambor
+from .models.MuestraTambor_model import MuestraTambor
 from .models.TamborApiario_model import TamborApiario
 from .models.Especie_model import Especie
-from .models.Muestra_model import Muestra
-from .models.MuestraTambor_model import MuestraTambor
+from .models.Pool_model import Pool
+from .models.ContienePool_model import ContienePool
 from .models.AnalisisPalinologico_model import AnalisisPalinologico
 from .models.AnalisisFisicoQuimico_model import AnalisisFisicoQuimico
 
@@ -28,7 +28,7 @@ class ApiarioSerializer(serializers.ModelSerializer):
 
 class TamborSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Tambor
+        model = MuestraTambor
         fields = '__all__'
 
 class TamborApiarioSerializer(serializers.ModelSerializer):
@@ -41,9 +41,9 @@ class EspecieSerializer(serializers.ModelSerializer):
         model = Especie
         fields = '__all__'
 
-class MuestraSerializer(serializers.ModelSerializer):
+class PoolSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Muestra
+        model = Pool
         fields = '__all__'
 
 class MuestraTamborSerializer(serializers.ModelSerializer):
@@ -71,14 +71,14 @@ class ApiarioDetailSerializer(serializers.ModelSerializer):
 
 class MuestraDetailSerializer(serializers.ModelSerializer):
     analista = AnalistaSerializer(read_only=True)
-    tambores = TamborSerializer(many=True, read_only=True)
+    tambores = MuestraTamborSerializer(many=True, read_only=True)
     
     class Meta:
-        model = Muestra
+        model = Pool
         fields = '__all__'
 
 class AnalisisPalinologicoDetailSerializer(serializers.ModelSerializer):
-    muestra = MuestraSerializer(read_only=True)
+    pool = PoolSerializer(read_only=True)
     especie = EspecieSerializer(read_only=True)
     
     class Meta:
@@ -87,7 +87,7 @@ class AnalisisPalinologicoDetailSerializer(serializers.ModelSerializer):
 
 class AnalisisFisicoQuimicoDetailSerializer(serializers.ModelSerializer):
     analista = AnalistaSerializer(read_only=True)
-    tambor = TamborSerializer(read_only=True)
+    tambor = MuestraTamborSerializer(read_only=True)
     
     class Meta:
         model = AnalisisFisicoQuimico

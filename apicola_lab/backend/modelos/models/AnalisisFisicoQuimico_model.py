@@ -1,6 +1,6 @@
 from django.db import models
 from modelos.models.Analista_model import Analista
-from modelos.models.Tambor_model import Tambor
+from modelos.models.MuestraTambor_model import MuestraTambor
 
 
 class AnalisisFisicoQuimico(models.Model):
@@ -12,7 +12,7 @@ class AnalisisFisicoQuimico(models.Model):
         db_column='id_analista'
     )
     tambor = models.ForeignKey(
-        Tambor, 
+        MuestraTambor, 
         on_delete=models.CASCADE,
         related_name='analisis_fisicoquimicos',
         db_column='id_tambor'

@@ -25,10 +25,10 @@ const Menu = () => {
       >
         <VStack spacing={6} align="center">
           <Text as="h1" fontSize="3xl" fontWeight="bold" mb={6}>
-            Menú Principal
+          Selecciona el tipo de análisis que deseas realizar:
           </Text>
           <Text fontSize="lg" color="gray.600" mb={6}>
-            Selecciona el tipo de análisis que deseas realizar:
+            Análisis posibles:
           </Text>
           <VStack spacing={4} w="100%">
             <Button

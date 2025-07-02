@@ -11,11 +11,11 @@ from datetime import timedelta
 from .models.Analista_model import Analista
 from .models.Apiario_model import Apiario
 from .models.Apicultor_model import Apicultor
-from .models.Tambor_model import Tambor
+from .models.MuestraTambor_model import MuestraTambor
 from .models.TamborApiario_model import TamborApiario
 from .models.Especie_model import Especie
-from .models.Muestra_model import Muestra
-from .models.MuestraTambor_model import MuestraTambor
+from .models.Pool_model import Pool
+from .models.ContienePool_model import ContienePool
 from .models.AnalisisPalinologico_model import AnalisisPalinologico
 from .models.AnalisisFisicoQuimico_model import AnalisisFisicoQuimico
 
@@ -23,7 +23,7 @@ from .models.AnalisisFisicoQuimico_model import AnalisisFisicoQuimico
 from .serializers import (
     ApicultorSerializer, AnalistaSerializer, ApiarioSerializer,
     TamborSerializer, TamborApiarioSerializer, EspecieSerializer,
-    MuestraSerializer, MuestraTamborSerializer, AnalisisPalinologicoSerializer,
+    PoolSerializer, MuestraTamborSerializer, AnalisisPalinologicoSerializer,
     AnalisisFisicoQuimicoSerializer, ApiarioDetailSerializer,
     MuestraDetailSerializer, AnalisisPalinologicoDetailSerializer,
     AnalisisFisicoQuimicoDetailSerializer, EstadisticasSerializer
@@ -32,7 +32,7 @@ from .serializers import (
 class ApicultorViewSet(viewsets.ModelViewSet):
     queryset = Apicultor.objects.all()
     serializer_class = ApicultorSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     @action(detail=True, methods=['get'])
     def apiarios(self, request, pk=None):
@@ -44,18 +44,18 @@ class ApicultorViewSet(viewsets.ModelViewSet):
 class AnalistaViewSet(viewsets.ModelViewSet):
     queryset = Analista.objects.all()
     serializer_class = AnalistaSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     @action(detail=True, methods=['get'])
     def muestras(self, request, pk=None):
         analista = self.get_object()
-        muestras = Muestra.objects.filter(analista=analista)
-        serializer = MuestraSerializer(muestras, many=True)
+        muestras = Pool.objects.filter(analista=analista)
+        serializer = PoolSerializer(muestras, many=True)
         return Response(serializer.data)
 
 class ApiarioViewSet(viewsets.ModelViewSet):
     queryset = Apiario.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -65,8 +65,8 @@ class ApiarioViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def tambores(self, request, pk=None):
         apiario = self.get_object()
-        tambores = Tambor.objects.filter(apiarios=apiario)
-        serializer = TamborSerializer(tambores, many=True)
+        tambores = MuestraTambor.objects.filter(apiarios=apiario)
+        serializer = MuestraTamborSerializer(tambores, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
@@ -76,13 +76,13 @@ class ApiarioViewSet(viewsets.ModelViewSet):
         # Estadísticas del apiario
         stats = {
             'total_tambores': apiario.tambores.count(),
-            'total_muestras': Muestra.objects.filter(tambores__apiarios=apiario).distinct().count(),
+            'total_muestras': Pool.objects.filter(tambores__apiarios=apiario).distinct().count(),
             'analisis_palinologicos': AnalisisPalinologico.objects.filter(
-                muestra__tambores__apiarios=apiario
+                pool__tambores__apiarios=apiario
             ).distinct().count(),
 
             'especies_encontradas': Especie.objects.filter(
-                analisis_palinologicos__muestra__tambores__apiarios=apiario
+                analisis_palinologicos__pool__tambores__apiarios=apiario
             ).distinct().count()
         }
 
@@ -99,21 +99,21 @@ class ApiarioViewSet(viewsets.ModelViewSet):
         return Response(stats)
 
 class TamborViewSet(viewsets.ModelViewSet):
-    queryset = Tambor.objects.all()
-    serializer_class = TamborSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = MuestraTambor.objects.all()
+    serializer_class = MuestraTamborSerializer
+    permission_classes = [permissions.AllowAny]
 
     @action(detail=True, methods=['get'])
     def muestras(self, request, pk=None):
         tambor = self.get_object()
-        muestras = Muestra.objects.filter(tambores=tambor)
-        serializer = MuestraSerializer(muestras, many=True)
+        muestras = Pool.objects.filter(tambores=tambor)
+        serializer = PoolSerializer(muestras, many=True)
         return Response(serializer.data)
 
 class EspecieViewSet(viewsets.ModelViewSet):
     queryset = Especie.objects.all()
     serializer_class = EspecieSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     @action(detail=True, methods=['get'])
     def analisis_palinologicos(self, request, pk=None):
@@ -123,13 +123,13 @@ class EspecieViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class MuestraViewSet(viewsets.ModelViewSet):
-    queryset = Muestra.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    queryset = Pool.objects.all()
+    permission_classes = [permissions.AllowAny]
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return MuestraDetailSerializer
-        return MuestraSerializer
+        return PoolSerializer
 
     @action(detail=True, methods=['get'])
     def estadisticas(self, request, pk=None):
@@ -150,7 +150,7 @@ class MuestraViewSet(viewsets.ModelViewSet):
 
 class AnalisisPalinologicoViewSet(viewsets.ModelViewSet):
     queryset = AnalisisPalinologico.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -173,7 +173,7 @@ class AnalisisPalinologicoViewSet(viewsets.ModelViewSet):
 
 class AnalisisFisicoQuimicoViewSet(viewsets.ModelViewSet):
     queryset = AnalisisFisicoQuimico.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -187,7 +187,7 @@ class AnalisisFisicoQuimicoViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class EstadisticasView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     serializer_class = EstadisticasSerializer
 
     def get(self, request):
@@ -195,8 +195,8 @@ class EstadisticasView(APIView):
         stats = {
             'total_apicultores': Apicultor.objects.count(),
             'total_apiarios': Apiario.objects.count(),
-            'total_tambores': Tambor.objects.count(),
-            'total_muestras': Muestra.objects.count(),
+            'total_tambores': MuestraTambor.objects.count(),
+            'total_muestras': Pool.objects.count(),
             'total_analisis': {
                 'palinologicos': AnalisisPalinologico.objects.count(),
                 'fisicoquimicos': AnalisisFisicoQuimico.objects.count()
@@ -204,7 +204,7 @@ class EstadisticasView(APIView):
         }
 
         # Estadísticas de muestras por mes
-        muestras_por_mes = Muestra.objects.annotate(
+        muestras_por_mes = Pool.objects.annotate(
             mes=TruncMonth('fecha_extraccion')
         ).values('mes').annotate(
             total=Count('id')
@@ -228,7 +228,7 @@ class EstadisticasView(APIView):
         # Estadísticas de los últimos 30 días
         fecha_limite = timezone.now() - timedelta(days=30)
         stats['ultimos_30_dias'] = {
-            'muestras_nuevas': Muestra.objects.filter(
+            'muestras_nuevas': Pool.objects.filter(
                 created_at__gte=fecha_limite
             ).count(),
             'analisis_nuevos': {
@@ -254,14 +254,14 @@ class ContadorView(APIView):
 
     def get(self, request):
         """Obtener el contador de muestras"""
-        contador = Muestra.objects.count()
+        contador = Pool.objects.count()
         return Response({'contador': contador})
 
     def post(self, request):
         """Crear una nueva muestra"""
-        serializer = MuestraSerializer(data=request.data)
+        serializer = PoolSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+

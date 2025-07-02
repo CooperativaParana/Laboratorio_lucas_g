@@ -30,10 +30,10 @@ const AgregarMuestra = () => {
       >
         <VStack spacing={6} align="center">
           <Text as="h1" fontSize="3xl" fontWeight="bold" mb={6}>
-            Agregar Muestra - Análisis {getTipoAnalisis()}
+            Crear Muestra - Análisis {getTipoAnalisis()}
           </Text>
           <Text fontSize="lg" color="gray.600" mb={6}>
-            Formulario para agregar una nueva muestra de análisis {getTipoAnalisis().toLowerCase()}
+            Formulario para crear una nueva muestra de análisis {getTipoAnalisis().toLowerCase()}
           </Text>
           <Box w="100%" p={4} border="1px" borderColor="gray.200" borderRadius="md">
             <Text fontSize="md" color="gray.500">
