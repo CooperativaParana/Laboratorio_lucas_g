@@ -14,7 +14,7 @@ class Pool(models.Model):
     )
     tambores = models.ManyToManyField(
         MuestraTambor,
-        through='ContienePool',
+        through='ContienePool', # Si no anda, cambiar a 'modelo.ContienePool'
         related_name='pools'
     )
     fecha_extraccion = models.DateField()

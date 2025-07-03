@@ -79,7 +79,7 @@ const Login = () => {
     }
     
     try {
-      const response = await axios.post('http://localhost:8000/api/token/', formData);
+      const response = await axios.post('http://localhost:8001/api/token/', formData);
       
       if (response.data.access) {
         localStorage.setItem('token', response.data.access);
