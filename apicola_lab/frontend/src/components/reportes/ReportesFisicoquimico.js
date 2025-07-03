@@ -120,12 +120,12 @@ const ReportesFisicoquimico = () => {
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
           <Box p={4} borderWidth={1} borderRadius="md" bg="green.50">
             <Text fontWeight="bold" color="green.600">Humedad Óptima</Text>
-            <Text fontSize="sm" color="gray.600">17% - 20%</Text>
+            <Text fontSize="sm" color="gray.600">Menos de 18%</Text>
             <Text fontSize="xs" color="gray.500">Rango ideal para miel de calidad</Text>
           </Box>
           <Box p={4} borderWidth={1} borderRadius="md" bg="yellow.50">
-            <Text fontWeight="bold" color="yellow.600">Humedad Aceptable</Text>
-            <Text fontSize="sm" color="gray.600">20% - 23%</Text>
+            <Text fontWeight="bold" color="yellow.600">Humedad No Aceptable</Text>
+            <Text fontSize="sm" color="gray.600">Mayor a 18%</Text>
             <Text fontSize="xs" color="gray.500">Requiere monitoreo</Text>
           </Box>
           <Box p={4} borderWidth={1} borderRadius="md" bg="blue.50">
@@ -149,27 +149,27 @@ const ReportesFisicoquimico = () => {
             <StatLabel>Muestras en Rango Óptimo</StatLabel>
             <StatNumber color="green.500">
               {data.humedad_por_apiario.filter(item => 
-                Number(item.promedio_humedad) >= 17 && 
-                Number(item.promedio_humedad) <= 20
+                Number(item.promedio_humedad) >= 1 && 
+                Number(item.promedio_humedad) <= 17
               ).length}
             </StatNumber>
-            <StatHelpText>Humedad 17-20%</StatHelpText>
+            <StatHelpText>Humedad menor a 18%</StatHelpText>
           </Stat>
           <Stat>
-            <StatLabel>Muestras Aceptables</StatLabel>
+            <StatLabel>Muestras No Aceptables</StatLabel>
             <StatNumber color="yellow.500">
               {data.humedad_por_apiario.filter(item => 
-                Number(item.promedio_humedad) > 20 && 
-                Number(item.promedio_humedad) <= 23
+                Number(item.promedio_humedad) > 17 && 
+                Number(item.promedio_humedad) <= 18
               ).length}
             </StatNumber>
-            <StatHelpText>Humedad 20-23%</StatHelpText>
+            <StatHelpText>Humedad mayor a 18%</StatHelpText>
           </Stat>
           <Stat>
             <StatLabel>Muestras Críticas</StatLabel>
             <StatNumber color="red.500">
               {data.humedad_por_apiario.filter(item => 
-                Number(item.promedio_humedad) > 23
+                Number(item.promedio_humedad) > 18
               ).length}
             </StatNumber>
             <StatHelpText>Humedad &gt; 23% (Requiere monitoreo)</StatHelpText>

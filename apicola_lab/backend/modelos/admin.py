@@ -1,6 +1,16 @@
 from django.contrib import admin
-from django.apps import apps
+from .models.Analista_model import Analista
+from .models.Pool_model import Pool
+from .models.Especie_model import Especie
+from .models.MuestraTambor_model import MuestraTambor
+from .models.ContienePool_model import ContienePool
+from .models.AnalisisPalinologico_model import AnalisisPalinologico
+from .models.AnalisisFisicoQuimico_model import AnalisisFisicoQuimico
 
-# Registrar todos los modelos de la aplicación
-for model in apps.get_app_config('modelos').get_models():
-    admin.site.register(model) 
+admin.site.register(Analista)
+admin.site.register(Pool)
+admin.site.register(Especie)
+admin.site.register(MuestraTambor)
+admin.site.register(ContienePool)
+admin.site.register(AnalisisPalinologico)
+admin.site.register(AnalisisFisicoQuimico) 
