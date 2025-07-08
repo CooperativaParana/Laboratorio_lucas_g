@@ -65,7 +65,7 @@ services:
     networks:
       - apicola_network
     environment:
-      - REACT_APP_API_URL=http://localhost:8000/api
+      - REACT_APP_API_URL=http://localhost:8001/api
     command: npm start
 
   # Adminer para gestión de BD (opcional)

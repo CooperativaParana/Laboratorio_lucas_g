@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Flex, Text, VStack, Input, Textarea, FormControl, FormLabel } from '@chakra-ui/react';
+import { Box, Button, Flex, Text, VStack, Input, Textarea, FormControl, FormLabel, Select } from '@chakra-ui/react';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const AgregarMuestra = () => {
-  // Simulación: el analista es el usuario logueado, por ahora id=1
-  const analistaId = 1;
+  // hay que obtener el id del usuario logueado
+  const [analistas, setAnalistas] = useState([]);
   const [form, setForm] = useState({
-    analista: analistaId,
+    analista: '',
     fecha_extraccion: '',
     fecha_analisis: '',
     num_registro: '',
@@ -15,6 +18,13 @@ const AgregarMuestra = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Obtener la lista de analistas
+    axios.get(`${API_URL}/analistas/`)
+      .then(res => setAnalistas(res.data))
+      .catch(err => setError('Error al cargar analistas: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
+  }, []);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -25,20 +35,10 @@ const AgregarMuestra = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/muestras/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-      if (res.ok) {
-        const data = await res.json();
-        navigate(`/contador-polen/${data.id}`);
-      } else {
-        const err = await res.json();
-        setError('Error al crear la muestra: ' + JSON.stringify(err));
-      }
+      const res = await axios.post(`${API_URL}/muestras/`, form);
+      navigate(`/contador-polen/${res.data.id}`);
     } catch (err) {
-      setError('Error de red');
+      setError('Error al crear la muestra: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     }
     setLoading(false);
   };
@@ -73,6 +73,16 @@ const AgregarMuestra = () => {
             <FormControl mb={4}>
               <FormLabel>Observaciones</FormLabel>
               <Textarea name="observaciones" value={form.observaciones} onChange={handleChange} />
+            </FormControl>
+            <FormControl mb={4} isRequired>
+              <FormLabel>Analista que crea la muestra</FormLabel>
+              <Select name="analista" value={form.analista} onChange={handleChange} placeholder="Seleccione un analista">
+                {analistas.map(analista => (
+                  <option key={analista.id} value={analista.id}>
+                    {analista.nombres} {analista.apellidos}
+                  </option>
+                ))}
+              </Select>
             </FormControl>
             {/* El campo analista se envía automáticamente con el id del usuario logueado, reemplazar el valor de analistaId por el ID real del usuario autenticado. */}
             {error && <Text color="red.500">{error}</Text>}

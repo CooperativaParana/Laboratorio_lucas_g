@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, Flex, Text, VStack, HStack } from '@chakra-ui/react';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const EditarMuestra = () => {
   const { id } = useParams();
@@ -11,18 +14,19 @@ const EditarMuestra = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('/api/especies/')
-      .then(res => res.json())
-      .then(data => setEspecies(data));
-    fetch(`/api/analisis-palinologicos/?pool=${id}`)
-      .then(res => res.json())
-      .then(data => {
+    axios.get(`${API_URL}/especies/`)
+      .then(res => setEspecies(res.data))
+      .catch(err => console.error('Error al cargar especies:', err));
+    
+    axios.get(`${API_URL}/analisis-palinologicos/?pool=${id}`)
+      .then(res => {
         const mapeo = {};
-        data.forEach(a => {
+        res.data.forEach(a => {
           mapeo[a.especie] = { id: a.id, cantidad: a.cantidad_granos };
         });
         setConteos(mapeo);
-      });
+      })
+      .catch(err => console.error('Error al cargar análisis:', err));
   }, [id]);
 
   const handleContador = (especieId, delta) => {
@@ -42,16 +46,14 @@ const EditarMuestra = () => {
       for (let especie of especies) {
         const conteo = conteos[especie.id];
         if (conteo) {
-          await fetch(`/api/analisis-palinologicos/${conteo.id}/`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cantidad_granos: conteo.cantidad })
+          await axios.put(`${API_URL}/analisis-palinologicos/${conteo.id}/`, {
+            cantidad_granos: conteo.cantidad
           });
         }
       }
       navigate('/muestras');
     } catch (err) {
-      setError('Error al guardar los cambios');
+      setError('Error al guardar los cambios: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     }
     setLoading(false);
   };

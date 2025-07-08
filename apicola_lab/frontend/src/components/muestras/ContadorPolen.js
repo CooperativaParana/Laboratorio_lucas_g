@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, Flex, Text, VStack, HStack } from '@chakra-ui/react';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const ContadorPolen = () => {
   const { id } = useParams(); // id del Pool
@@ -11,9 +14,9 @@ const ContadorPolen = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('/api/especies/')
-      .then(res => res.json())
-      .then(data => setEspecies(data));
+    axios.get(`${API_URL}/especies/`)
+      .then(res => setEspecies(res.data))
+      .catch(err => console.error('Error al cargar especies:', err));
   }, []);
 
   const handleContador = (especieId, delta) => {
@@ -30,16 +33,16 @@ const ContadorPolen = () => {
       for (let especie of especies) {
         const cantidad = conteos[especie.id] || 0;
         if (cantidad > 0) {
-          await fetch('/api/analisis-palinologicos/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pool: id, especie: especie.id, cantidad_granos: cantidad })
+          await axios.post(`${API_URL}/analisis-palinologicos/`, {
+            pool: id,
+            especie: especie.id,
+            cantidad_granos: cantidad
           });
         }
       }
       navigate('/muestras');
     } catch (err) {
-      setError('Error al guardar los conteos');
+      setError('Error al guardar los conteos: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     }
     setLoading(false);
   };
