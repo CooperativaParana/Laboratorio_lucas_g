@@ -13,21 +13,40 @@ const TodosAnalisis = () => {
   const [filtroAnalista, setFiltroAnalista] = useState('');
   const [filtroFechaDesde, setFiltroFechaDesde] = useState('');
   const [filtroFechaHasta, setFiltroFechaHasta] = useState('');
+  const [pools, setPools] = useState([]);
+  const [analistas, setAnalistas] = useState([]);
 
   useEffect(() => {
     const fetchAnalisis = async () => {
       setLoading(true);
       setError('');
       try {
-        // Obtener ambos tipos de análisis
-        const [palinoRes, fisicoRes] = await Promise.all([
+        // Obtener ambos tipos de análisis, pools y analistas
+        const [palinoRes, fisicoRes, poolsRes, analistasRes] = await Promise.all([
           axios.get(`${API_URL}/analisis-palinologicos/`),
-          axios.get(`${API_URL}/analisis-fisicoquimicos/`)
+          axios.get(`${API_URL}/analisis-fisicoquimicos/`),
+          axios.get(`${API_URL}/muestras/`),
+          axios.get(`${API_URL}/analistas/`)
         ]);
-        // Agregar tipo a cada uno
-        const palino = palinoRes.data.map(a => ({ ...a, tipo: 'Palinológico' }));
+        // Agrupar análisis palinológicos por pool
+        const palinoPorPool = {};
+        palinoRes.data.forEach(a => {
+          if (!palinoPorPool[a.pool]) palinoPorPool[a.pool] = [];
+          palinoPorPool[a.pool].push(a);
+        });
+        // Filtrar pools que tienen análisis palinológico
+        const poolsConPalino = poolsRes.data.filter(pool => palinoPorPool[pool.id]);
+        // Marcar tipo y guardar ids de análisis palinológicos
+        const poolsPalino = poolsConPalino.map(pool => ({
+          ...pool,
+          tipo: 'Palinológico',
+          analisisPalinologicoIds: palinoPorPool[pool.id]?.map(a => a.id) || []
+        }));
+        // Agregar tipo a fisicoquímicos
         const fisico = fisicoRes.data.map(a => ({ ...a, tipo: 'Fisicoquímico' }));
-        setAnalisis([...palino, ...fisico]);
+        setPools(poolsPalino);
+        setAnalisis(fisico);
+        setAnalistas(analistasRes.data);
       } catch (err) {
         setError('Error al cargar los análisis');
       }
@@ -36,11 +55,40 @@ const TodosAnalisis = () => {
     fetchAnalisis();
   }, []);
 
+  // Función para obtener el nombre completo del analista por ID
+  const getNombreAnalista = (id) => {
+    const analista = analistas.find(a => a.id === id);
+    return analista ? `${analista.nombres} ${analista.apellidos || ''}` : id;
+  };
+
   // Filtrado de análisis
-  const analisisFiltrados = analisis.filter(a => {
+  const poolsFiltrados = pools.filter(pool => {
     // Filtrar por analista (nombre o apellido)
-    const nombreAnalista = (a.analista?.nombres || a.analista || '').toLowerCase();
-    const coincideAnalista = nombreAnalista.includes(filtroAnalista.toLowerCase());
+    let nombreAnalista = '';
+    if (typeof pool.analista === 'object' && pool.analista !== null) {
+      nombreAnalista = pool.analista.nombres || '';
+    } else if (pool.analista !== undefined && pool.analista !== null) {
+      nombreAnalista = pool.analista;
+    }
+    const coincideAnalista = nombreAnalista.toString().toLowerCase().includes(filtroAnalista.toLowerCase());
+    // Filtrar por fecha (fecha_analisis)
+    let coincideFecha = true;
+    if (filtroFechaDesde) {
+      coincideFecha = pool.fecha_analisis >= filtroFechaDesde;
+    }
+    if (coincideFecha && filtroFechaHasta) {
+      coincideFecha = pool.fecha_analisis <= filtroFechaHasta;
+    }
+    return coincideAnalista && coincideFecha;
+  });
+  const analisisFiltrados = analisis.filter(a => {
+    let nombreAnalista = '';
+    if (typeof a.analista === 'object' && a.analista !== null) {
+      nombreAnalista = a.analista.nombres || '';
+    } else if (a.analista !== undefined && a.analista !== null) {
+      nombreAnalista = a.analista;
+    }
+    const coincideAnalista = nombreAnalista.toString().toLowerCase().includes(filtroAnalista.toLowerCase());
     // Filtrar por fecha (fecha_analisis)
     let coincideFecha = true;
     if (filtroFechaDesde) {
@@ -52,9 +100,13 @@ const TodosAnalisis = () => {
     return coincideAnalista && coincideFecha;
   });
 
-  const handleEditar = (tipo, id) => {
+  // Ordenar por fecha de análisis descendente
+  const poolsOrdenados = [...poolsFiltrados].sort((a, b) => (b.fecha_analisis || '').localeCompare(a.fecha_analisis || ''));
+  const analisisOrdenados = [...analisisFiltrados].sort((a, b) => (b.fecha_analisis || '').localeCompare(a.fecha_analisis || ''));
+
+  const handleEditar = (tipo, id, poolId) => {
     if (tipo === 'Palinológico') {
-      navigate(`/editar-analisis-palinologico/${id}`);
+      navigate(`/contador-polen/${poolId}`);
     } else {
       navigate(`/editar-analisis-fisicoquimico/${id}`);
     }
@@ -65,6 +117,9 @@ const TodosAnalisis = () => {
       <Box bg="white" p={8} rounded="lg" boxShadow="lg" w={{ base: '98%', md: '800px' }}>
         <VStack spacing={6} align="center">
           <Text as="h1" fontSize="2xl" fontWeight="bold">Todos los análisis</Text>
+          <Button colorScheme="gray" alignSelf="flex-start" onClick={() => navigate('/menu')} mb={2}>
+            Volver al menú
+          </Button>
           {/* Filtros */}
           <Flex w="100%" gap={4} flexWrap="wrap" justify="center">
             <Input
@@ -93,23 +148,40 @@ const TodosAnalisis = () => {
           </Flex>
           {loading ? <Spinner size="xl" /> : error ? <Text color="red.500">{error}</Text> : (
             <Box w="100%">
-              {analisisFiltrados.length === 0 ? (
+              {/* Mostrar pools con análisis palinológico */}
+              {poolsOrdenados.map(pool => (
+                <Box key={pool.id} borderWidth={1} borderRadius="md" p={4} mb={3} w="100%" bg="gray.100">
+                  <HStack justify="space-between" align="center">
+                    <VStack align="start" spacing={1}>
+                      <Text><b>ID Pool:</b> {pool.id}</Text>
+                      <Text><b>Analista:</b> {typeof pool.analista === 'object' && pool.analista !== null ? `${pool.analista.nombres} ${pool.analista.apellidos || ''}` : getNombreAnalista(pool.analista)}</Text>
+                      <Text><b>Tipo:</b> {pool.tipo}</Text>
+                      <Text><b>Fecha de análisis:</b> {pool.fecha_analisis}</Text>
+                    </VStack>
+                    <Button colorScheme="yellow" onClick={() => handleEditar(pool.tipo, null, pool.id)}>
+                      Editar
+                    </Button>
+                  </HStack>
+                </Box>
+              ))}
+              {/* Mostrar análisis fisicoquímicos individuales */}
+              {analisisOrdenados.map(a => (
+                <Box key={a.id} borderWidth={1} borderRadius="md" p={4} mb={3} w="100%" bg="gray.100">
+                  <HStack justify="space-between" align="center">
+                    <VStack align="start" spacing={1}>
+                      <Text><b>ID:</b> {a.id}</Text>
+                      <Text><b>Analista:</b> {typeof a.analista === 'object' && a.analista !== null ? `${a.analista.nombres} ${a.analista.apellidos || ''}` : getNombreAnalista(a.analista)}</Text>
+                      <Text><b>Tipo:</b> {a.tipo}</Text>
+                      <Text><b>Fecha de análisis:</b> {a.fecha_analisis}</Text>
+                    </VStack>
+                    <Button colorScheme="yellow" onClick={() => handleEditar(a.tipo, a.id)}>
+                      Editar
+                    </Button>
+                  </HStack>
+                </Box>
+              ))}
+              {poolsOrdenados.length === 0 && analisisOrdenados.length === 0 && (
                 <Text>No hay análisis registrados.</Text>
-              ) : (
-                analisisFiltrados.map(a => (
-                  <Box key={a.id} borderWidth={1} borderRadius="md" p={4} mb={3} w="100%" bg="gray.100">
-                    <HStack justify="space-between" align="center">
-                      <VStack align="start" spacing={1}>
-                        <Text><b>ID:</b> {a.id}</Text>
-                        <Text><b>Analista:</b> {a.analista?.nombres || a.analista}</Text>
-                        <Text><b>Tipo:</b> {a.tipo}</Text>
-                      </VStack>
-                      <Button colorScheme="yellow" onClick={() => handleEditar(a.tipo, a.id)}>
-                        Editar
-                      </Button>
-                    </HStack>
-                  </Box>
-                ))
               )}
             </Box>
           )}
