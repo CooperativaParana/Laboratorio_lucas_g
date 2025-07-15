@@ -13,6 +13,10 @@ const Menu = () => {
     navigate('/analisis-fisicoquimico');
   };
 
+  const handleVerAnalisis = () => {
+    navigate('/todos-analisis');
+  };
+
   return (
     <Flex minH="100vh" align="center" justify="center" bg="transparent">
       <Box
@@ -46,6 +50,14 @@ const Menu = () => {
               onClick={handleAnalisisFisicoquimico}
             >
               Análisis Fisicoquímico
+            </Button>
+            <Button
+              colorScheme="yellow"
+              size="lg"
+              w="100%"
+              onClick={handleVerAnalisis}
+            >
+              Ver todos los análisis
             </Button>
           </VStack>
         </VStack>

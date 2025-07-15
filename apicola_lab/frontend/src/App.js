@@ -12,6 +12,7 @@ import GraficasConsultas from './components/graficas/GraficasConsultas';
 import ContadorPolen from './components/muestras/ContadorPolen';
 import ListaMuestras from './components/muestras/ListaMuestras';
 import EditarMuestra from './components/muestras/EditarMuestra';
+import TodosAnalisis from './components/analisis/TodosAnalisis';
 import './App.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="/contador-polen/:id" element={<ContadorPolen />} />
           <Route path="/muestras" element={<ListaMuestras />} />
           <Route path="/editar-muestra/:id" element={<EditarMuestra />} />
+          <Route path="/todos-analisis" element={<TodosAnalisis />} />
         </Routes>
       </div>
     </Router>

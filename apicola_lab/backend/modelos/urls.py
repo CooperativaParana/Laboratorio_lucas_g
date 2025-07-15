@@ -4,7 +4,7 @@ from .views import (
     ApicultorViewSet, AnalistaViewSet, ApiarioViewSet,
     TamborViewSet, EspecieViewSet, MuestraViewSet,
     AnalisisPalinologicoViewSet, AnalisisFisicoQuimicoViewSet,
-    EstadisticasView
+    EstadisticasView, ContienePoolViewSet, TamborApiarioViewSet
 )
 
 router = DefaultRouter()
@@ -16,6 +16,8 @@ router.register(r'especies', EspecieViewSet)
 router.register(r'muestras', MuestraViewSet)
 router.register(r'analisis-palinologicos', AnalisisPalinologicoViewSet)
 router.register(r'analisis-fisicoquimicos', AnalisisFisicoQuimicoViewSet)
+router.register(r'contiene-pool', ContienePoolViewSet)
+router.register(r'tambor-apiario', TamborApiarioViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

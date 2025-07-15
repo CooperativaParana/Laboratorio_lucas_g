@@ -26,7 +26,8 @@ from .serializers import (
     PoolSerializer, MuestraTamborSerializer, AnalisisPalinologicoSerializer,
     AnalisisFisicoQuimicoSerializer, ApiarioDetailSerializer,
     MuestraDetailSerializer, AnalisisPalinologicoDetailSerializer,
-    AnalisisFisicoQuimicoDetailSerializer, EstadisticasSerializer
+    AnalisisFisicoQuimicoDetailSerializer, EstadisticasSerializer,
+    ContienePoolSerializer
 )
 
 class ApicultorViewSet(viewsets.ModelViewSet):
@@ -265,3 +266,23 @@ class ContadorView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ContienePoolViewSet(viewsets.ModelViewSet):
+    queryset = ContienePool.objects.all()
+    serializer_class = ContienePoolSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=True, methods=['get'])
+    def pool(self, request, pk=None):
+        contiene_pool = self.get_object()
+        serializer = PoolSerializer(contiene_pool.pool)
+        return Response(serializer.data)
+
+class TamborApiarioViewSet(viewsets.ModelViewSet):
+    queryset = TamborApiario.objects.all()
+    serializer_class = TamborApiarioSerializer
+    permission_classes = [permissions.AllowAny]
+
+    @action(detail=True, methods=['get'])
+    def apiario(self, request, pk=None):
+        tambor_apiario = self.get_object()
+        serializer = ApiarioSerializer(tambor_apiario.apiario)

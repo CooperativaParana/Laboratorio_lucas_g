@@ -107,3 +107,8 @@ class EstadisticasSerializer(serializers.Serializer):
     humedad_por_apiario = serializers.ListField(
         child=serializers.DictField()
     )
+
+class ContienePoolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContienePool
+        fields = '__all__'
