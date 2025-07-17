@@ -157,6 +157,13 @@ class AnalisisPalinologicoViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             return AnalisisPalinologicoDetailSerializer
         return AnalisisPalinologicoSerializer
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        pool_id = self.request.query_params.get('pool')
+        if pool_id:
+            return queryset.filter(pool=pool_id)
+        return queryset
 
     @action(detail=False, methods=['get'])
     def resumen_especies(self, request):

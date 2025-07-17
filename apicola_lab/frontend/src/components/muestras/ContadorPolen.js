@@ -103,16 +103,27 @@ const ContadorPolen = () => {
   const ModoSeleccion = () => (
     <VStack spacing={4} align="center" w={{ base: '100%', md: '600px' }}>
       <Heading size="md" mb={4}>Selecciona las especies presentes en la muestra</Heading>
-      {especies.map((especie) => (
-        <HStack key={especie.id} spacing={4} w="100%" justify="flex-start" bg="white" p={3} rounded="md" boxShadow="sm">
-          <Checkbox
-            isChecked={especiesSeleccionadas.some(e => e.id === especie.id)}
-            onChange={() => toggleEspecieSeleccionada(especie)}
-            colorScheme="green"
-          />
-          <Text flex={1} fontWeight="medium">{especie.nombre_cientifico}</Text>
-        </HStack>
-      ))}
+      <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={3} w="100%">
+        {especies.map((especie) => {
+          const seleccionada = especiesSeleccionadas.some(e => e.id === especie.id);
+          return (
+            <Button
+              key={especie.id}
+              colorScheme={seleccionada ? 'green' : 'gray'}
+              variant={seleccionada ? 'solid' : 'outline'}
+              onClick={() => toggleEspecieSeleccionada(especie)}
+              w="100%"
+              h="48px"
+              fontWeight="medium"
+              fontSize="md"
+              whiteSpace="normal"
+              textAlign="center"
+            >
+              {especie.nombre_cientifico}
+            </Button>
+          );
+        })}
+      </SimpleGrid>
     </VStack>
   );
 
@@ -124,19 +135,26 @@ const ContadorPolen = () => {
         <VStack key={especie.id} spacing={2} w="100%" bg="white" p={3} rounded="md" boxShadow="sm">
           <HStack spacing={4} w="100%" justify="center">
             <IconButton
-              icon={<MinusIcon />}
-              colorScheme="red"
-              aria-label="Restar"
-              onClick={() => decrementarConteo(especie.id)}
-              size="sm"
-            />
-            <Text flex={1} textAlign="center" fontWeight="medium">{especie.nombre_cientifico}</Text>
-            <Text fontSize="lg" w="30px" textAlign="center">{conteos[especie.id] || 0}</Text>
-            <IconButton
               icon={<AddIcon />}
               colorScheme="green"
               aria-label="Sumar"
               onClick={() => incrementarConteo(especie.id)}
+              size="sm"
+            />
+            <VStack spacing={0} flex={1}>
+              <Text fontSize="2xl" fontWeight="bold" textAlign="center">{conteos[especie.id] || 0}</Text>
+              <HStack spacing={2} justify="center">
+                <Text fontSize="sm" color="gray.600">{especie.nombre_cientifico}</Text>
+                <Text fontSize="xs" color={marcasEspeciales[especie.id] ? 'green.600' : 'gray.400'} ml={2}>
+                  {marcasEspeciales[especie.id] ? `Marca: ${marcasEspeciales[especie.id]}` : 'Sin marca'}
+                </Text>
+              </HStack>
+            </VStack>
+            <IconButton
+              icon={<MinusIcon />}
+              colorScheme="red"
+              aria-label="Restar"
+              onClick={() => decrementarConteo(especie.id)}
               size="sm"
             />
           </HStack>
