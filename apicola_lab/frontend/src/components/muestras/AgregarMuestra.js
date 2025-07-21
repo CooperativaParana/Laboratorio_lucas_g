@@ -124,10 +124,6 @@ const AgregarMuestra = () => {
               <FormLabel>Fecha de Análisis</FormLabel>
               <Input type="date" name="fecha_analisis" value={form.fecha_analisis} onChange={handleChange} />
             </FormControl>
-            <FormControl mb={4} isRequired>
-              <FormLabel>Número de Registro</FormLabel>
-              <Input type="text" name="num_registro" value={form.num_registro} onChange={handleChange} />
-            </FormControl>
             <FormControl mb={4}>
               <FormLabel>Observaciones</FormLabel>
               <Textarea name="observaciones" value={form.observaciones} onChange={handleChange} />

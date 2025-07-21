@@ -42,5 +42,16 @@ class Pool(models.Model):
                     'La fecha de análisis no puede ser anterior a la fecha de extracción'
                 )
 
+    def save(self, *args, **kwargs):
+        if not self.num_registro or self.num_registro == '':
+            # Buscar el último número de registro existente
+            ultimo = Pool.objects.order_by('-id').first()
+            if ultimo and ultimo.num_registro and ultimo.num_registro.isdigit():
+                nuevo_num = int(ultimo.num_registro) + 1
+            else:
+                nuevo_num = 1
+            self.num_registro = str(nuevo_num).zfill(6)  # Ejemplo: 000001, 000002
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Pool {self.num_registro or self.id} - {self.fecha_extraccion}"

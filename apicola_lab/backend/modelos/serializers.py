@@ -45,6 +45,7 @@ class PoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pool
         fields = '__all__'
+        read_only_fields = ['num_registro']
 
 class MuestraTamborSerializer(serializers.ModelSerializer):
     class Meta:
