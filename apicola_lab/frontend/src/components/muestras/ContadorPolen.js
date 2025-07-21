@@ -17,6 +17,7 @@ const ContadorPolen = () => {
   const [success, setSuccess] = useState(false);
   const { id } = useParams(); // id del pool
   const navigate = useNavigate();
+  const audioSumar = new Audio(process.env.PUBLIC_URL + '/sumar1.mp3');
 
   // Responsive: columnas en desktop, una sola columna en móvil
   const columns = useBreakpointValue({ base: 1, md: 1 });
@@ -44,6 +45,8 @@ const ContadorPolen = () => {
 
   const incrementarConteo = (especieId) => {
     setConteos(prev => ({ ...prev, [especieId]: (prev[especieId] || 0) + 1 }));
+    audioSumar.currentTime = 0;
+    audioSumar.play();
   };
 
   const decrementarConteo = (especieId) => {
@@ -135,11 +138,13 @@ const ContadorPolen = () => {
         <VStack key={especie.id} spacing={2} w="100%" bg="white" p={3} rounded="md" boxShadow="sm">
           <HStack spacing={4} w="100%" justify="center">
             <IconButton
-              icon={<AddIcon />}
-              colorScheme="green"
-              aria-label="Sumar"
-              onClick={() => incrementarConteo(especie.id)}
-              size="sm"
+              icon={<MinusIcon />}
+              colorScheme="red"
+              aria-label="Restar"
+              onClick={() => decrementarConteo(especie.id)}
+              size="lg"
+              w="40px"
+              h="40px"
             />
             <VStack spacing={0} flex={1}>
               <Text fontSize="2xl" fontWeight="bold" textAlign="center">{conteos[especie.id] || 0}</Text>
@@ -151,11 +156,13 @@ const ContadorPolen = () => {
               </HStack>
             </VStack>
             <IconButton
-              icon={<MinusIcon />}
-              colorScheme="red"
-              aria-label="Restar"
-              onClick={() => decrementarConteo(especie.id)}
-              size="sm"
+              icon={<AddIcon />}
+              colorScheme="green"
+              aria-label="Sumar"
+              onClick={() => incrementarConteo(especie.id)}
+              size="lg"
+              w="56px"
+              h="56px"
             />
           </HStack>
           <HStack spacing={2} w="100%" justify="center">
@@ -168,8 +175,6 @@ const ContadorPolen = () => {
               placeholder="Sin marca"
             >
               <option value="x">x</option>
-              <option value="#">#</option>
-              <option value="##">##</option>
             </Select>
           </HStack>
         </VStack>
