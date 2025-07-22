@@ -91,30 +91,74 @@ const AgregarMuestra = () => {
             </FormControl>
             <FormControl mb={4} isRequired>
               <FormLabel>Tambores que componen el pool</FormLabel>
-              <Select
-                isMulti
-                name="tambores"
-                options={tambores.map(t => ({
-                  value: t.id,
-                  label: t.num_registro
-                }))}
-                value={tambores.filter(t => selectedTambores.includes(String(t.id))).map(t => ({
-                  value: t.id,
-                  label: t.num_registro
-                }))}
-                onChange={selected =>
-                  setSelectedTambores(selected ? selected.map(option => String(option.value)) : [])
-                }
-                placeholder="Seleccione uno o más tambores"
-                styles={{
-                  menu: provided => ({ ...provided, zIndex: 9999 }),
-                  control: provided => ({ ...provided, minHeight: '48px' }),
-                  multiValue: provided => ({ ...provided, backgroundColor: '#f6e05e', color: '#333' }),
-                  multiValueLabel: provided => ({ ...provided, color: '#333' }),
-                  multiValueRemove: provided => ({ ...provided, color: '#333', ':hover': { backgroundColor: '#ecc94b', color: '#222' } })
-                }}
-                isSearchable
-              />
+              <Box>
+                <Box
+                  maxH="350px" // Altura máxima del cuadro de tarjetas
+                  overflowY="auto"
+                  border="1px solid #E2E8F0"
+                  borderRadius="md"
+                  p={2}
+                  bg="gray.50"
+                >
+                  <Flex wrap="wrap" gap={4}>
+                    {tambores.length === 0 && (
+                      <Text color="gray.500">No hay tambores disponibles.</Text>
+                    )}
+                    {tambores.map(tambor => {
+                      const isSelected = selectedTambores.includes(String(tambor.id));
+                      // Lógica para mostrar apicultor y apiarios
+                      const primerApiario = tambor.apiarios && tambor.apiarios.length > 0 ? tambor.apiarios[0] : null;
+                      const apicultor = primerApiario && primerApiario.apicultor
+                        ? `${primerApiario.apicultor.nombre} ${primerApiario.apicultor.apellido}`
+                        : '-';
+                      const nombresApiarios = tambor.apiarios && tambor.apiarios.length > 0
+                        ? tambor.apiarios.map(a => a.nombre_apiario).join(', ')
+                        : '-';
+                      return (
+                        <Box
+                          key={tambor.id}
+                          borderWidth={isSelected ? 2 : 1}
+                          borderColor={isSelected ? 'yellow.400' : 'gray.200'}
+                          bg={isSelected ? 'yellow.50' : 'white'}
+                          borderRadius="md"
+                          p={4}
+                          minW="220px"
+                          maxW="250px"
+                          boxShadow={isSelected ? 'md' : 'sm'}
+                          transition="all 0.2s"
+                          position="relative"
+                        >
+                          <Flex align="center" justify="space-between" mb={2}>
+                            <Text fontWeight="bold" fontSize="lg">#{tambor.num_registro}</Text>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={e => {
+                                if (e.target.checked) {
+                                  setSelectedTambores(prev => [...prev, String(tambor.id)]);
+                                } else {
+                                  setSelectedTambores(prev => prev.filter(id => id !== String(tambor.id)));
+                                }
+                              }}
+                              style={{ width: 20, height: 20 }}
+                            />
+                          </Flex>
+                          <Box fontSize="sm" color="gray.700">
+                            <div><strong>Apicultor:</strong> {apicultor}</div>
+                            <div><strong>Apiario(s):</strong> {nombresApiarios}</div>
+                            {/* Puedes agregar más campos si lo deseas */}
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Flex>
+                </Box>
+                {selectedTambores.length > 0 && (
+                  <Box mt={2} color="gray.600" fontSize="sm">
+                    <strong>{selectedTambores.length}</strong> tambor(es) seleccionado(s)
+                  </Box>
+                )}
+              </Box>
             </FormControl>
             <FormControl mb={4} isRequired>
               <FormLabel>Fecha de Extracción</FormLabel>

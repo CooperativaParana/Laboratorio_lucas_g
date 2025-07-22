@@ -113,3 +113,11 @@ class ContienePoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContienePool
         fields = '__all__'
+
+# --- Nuevo serializer para tambores con apiarios y apicultor anidados ---
+class TamborWithApiariosSerializer(serializers.ModelSerializer):
+    apiarios = ApiarioDetailSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = MuestraTambor
+        fields = ['id', 'num_registro', 'apiarios']

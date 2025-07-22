@@ -27,7 +27,8 @@ from .serializers import (
     AnalisisFisicoQuimicoSerializer, ApiarioDetailSerializer,
     MuestraDetailSerializer, AnalisisPalinologicoDetailSerializer,
     AnalisisFisicoQuimicoDetailSerializer, EstadisticasSerializer,
-    ContienePoolSerializer
+    ContienePoolSerializer,
+    TamborWithApiariosSerializer
 )
 
 class ApicultorViewSet(viewsets.ModelViewSet):
@@ -101,7 +102,7 @@ class ApiarioViewSet(viewsets.ModelViewSet):
 
 class TamborViewSet(viewsets.ModelViewSet):
     queryset = MuestraTambor.objects.all()
-    serializer_class = MuestraTamborSerializer
+    serializer_class = TamborWithApiariosSerializer
     permission_classes = [permissions.AllowAny]
 
     @action(detail=True, methods=['get'])

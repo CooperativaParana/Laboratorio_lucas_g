@@ -50,7 +50,7 @@ class Pool(models.Model):
                 nuevo_num = int(ultimo.num_registro) + 1
             else:
                 nuevo_num = 1
-            self.num_registro = str(nuevo_num).zfill(6)  # Ejemplo: 000001, 000002
+            self.num_registro = str(nuevo_num).zfill(5)  # Ejemplo: 00001, 00002
         super().save(*args, **kwargs)
 
     def __str__(self):

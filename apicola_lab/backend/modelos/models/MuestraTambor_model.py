@@ -2,7 +2,6 @@ from django.db import models
 from modelos.models.Apiario_model import Apiario
 
 
-
 class MuestraTambor(models.Model):
     """Modelo para los tambores de miel"""
     num_registro = models.CharField(max_length=50, unique=True)
