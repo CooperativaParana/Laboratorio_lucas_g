@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button, Flex, Text, VStack, Input, Textarea, FormControl, FormLabel, Select as ChakraSelect } from '@chakra-ui/react';
+import { Box, Button, Flex, Text, VStack, Input, Textarea, FormControl, FormLabel, Select as ChakraSelect, useToast, Badge, HStack, IconButton, SimpleGrid } from '@chakra-ui/react';
+import { CheckCircleIcon, CloseIcon } from '@chakra-ui/icons';
 import axios from 'axios';
-import Select from 'react-select';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -20,7 +20,7 @@ const AgregarMuestra = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const toast = useToast();
 
   useEffect(() => {
     // Obtener la lista de analistas
@@ -37,19 +37,29 @@ const AgregarMuestra = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleTamboresChange = (e) => {
-    const selected = Array.from(e.target.selectedOptions, option => option.value);
-    setSelectedTambores(selected);
+  // Nuevo: separar tambores seleccionados y disponibles
+  const tamboresDisponibles = tambores.filter(t => !selectedTambores.includes(String(t.id)));
+  const tamboresSeleccionados = tambores.filter(t => selectedTambores.includes(String(t.id)));
+
+  const handleAgregarTambor = (id) => {
+    setSelectedTambores(prev => [...prev, String(id)]);
+  };
+  const handleQuitarTambor = (id) => {
+    setSelectedTambores(prev => prev.filter(tid => tid !== String(id)));
   };
 
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    if (!form.analista || selectedTambores.length === 0 || !form.fecha_analisis) {
+      setError('Debe seleccionar un analista, al menos un tambor y la fecha de análisis.');
+      setLoading(false);
+      return;
+    }
     try {
       const res = await axios.post(`${API_URL}/muestras/`, form);
       const poolId = res.data.id;
-      // Asociar cada tambor seleccionado al pool
       await Promise.all(selectedTambores.map(tamborId =>
         axios.post(`${API_URL}/contiene-pool/`, {
           pool: poolId,
@@ -57,7 +67,17 @@ const AgregarMuestra = () => {
           fecha_asociacion: form.fecha_analisis
         })
       ));
-      navigate(`/contador-polen/${poolId}`);
+      toast({
+        title: 'Pool creado',
+        description: `Analista: ${analistas.find(a => a.id === Number(form.analista))?.nombres || ''}\nTambores: ${tamboresSeleccionados.map(t => t.num_registro).join(', ')}\nFecha análisis: ${form.fecha_analisis}`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+        icon: <CheckCircleIcon color="green.400" boxSize={5} />
+      });
+      // Resetear formulario
+      setForm({ analista: '', fecha_analisis: '', num_registro: '', observaciones: '' });
+      setSelectedTambores([]);
     } catch (err) {
       setError('Error al crear la muestra o asociar tambores: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     }
@@ -65,119 +85,137 @@ const AgregarMuestra = () => {
   };
 
   return (
-    <Flex minH="100vh" align="center" justify="center" bg="transparent">
-      <Box
-        bg="white"
-        p={8}
-        rounded="lg"
-        boxShadow="lg"
-        w={{ base: '90%', md: '600px' }}
-        className="honeycomb-glow"
-      >
-        <VStack spacing={6} align="center">
-          <Text as="h1" fontSize="3xl" fontWeight="bold" mb={6}>
-            Crear Muestra - Análisis Palinológico
+    <Flex minH="100vh" align="center" justify="center" bg="gray.50" p={2}>
+      <Box bg="white" p={6} rounded="lg" boxShadow="lg" w={{ base: '100%', md: '1100px' }}>
+        <VStack spacing={6} align="center" w="100%">
+          <Text as="h1" fontSize="3xl" fontWeight="bold" mb={2} color="blue.700">
+            Crear Pool - Análisis Palinológico
           </Text>
-          <form style={{ width: '100%' }} onSubmit={handleSubmit}>
-            <FormControl mb={4} isRequired>
-              <FormLabel>Analista que crea la muestra</FormLabel>
-              <ChakraSelect name="analista" value={form.analista} onChange={handleChange} placeholder="Seleccione un analista">
-                {analistas.map(analista => (
-                  <option key={analista.id} value={analista.id}>
-                    {analista.nombres} {analista.apellidos}
-                  </option>
-                ))}
-              </ChakraSelect>
-            </FormControl>
-            <FormControl mb={4} isRequired>
-              <FormLabel>Tambores que componen el pool</FormLabel>
-              <Box>
-                <Box
-                  maxH="350px" // Altura máxima del cuadro de tarjetas
-                  overflowY="auto"
-                  border="1px solid #E2E8F0"
-                  borderRadius="md"
-                  p={2}
-                  bg="gray.50"
-                >
-                  <Flex wrap="wrap" gap={4}>
-                    {tambores.length === 0 && (
-                      <Text color="gray.500">No hay tambores disponibles.</Text>
-                    )}
-                    {tambores.map(tambor => {
-                      const isSelected = selectedTambores.includes(String(tambor.id));
-                      // Lógica para mostrar apicultor y apiarios
-                      const primerApiario = tambor.apiarios && tambor.apiarios.length > 0 ? tambor.apiarios[0] : null;
-                      const apicultor = primerApiario && primerApiario.apicultor
-                        ? `${primerApiario.apicultor.nombre} ${primerApiario.apicultor.apellido}`
-                        : '-';
-                      const nombresApiarios = tambor.apiarios && tambor.apiarios.length > 0
-                        ? tambor.apiarios.map(a => a.nombre_apiario).join(', ')
-                        : '-';
-                      return (
-                        <Box
-                          key={tambor.id}
-                          borderWidth={isSelected ? 2 : 1}
-                          borderColor={isSelected ? 'yellow.400' : 'gray.200'}
-                          bg={isSelected ? 'yellow.50' : 'white'}
-                          borderRadius="md"
-                          p={4}
-                          minW="220px"
-                          maxW="250px"
-                          boxShadow={isSelected ? 'md' : 'sm'}
-                          transition="all 0.2s"
-                          position="relative"
-                        >
-                          <Flex align="center" justify="space-between" mb={2}>
-                            <Text fontWeight="bold" fontSize="lg">#{tambor.num_registro}</Text>
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={e => {
-                                if (e.target.checked) {
-                                  setSelectedTambores(prev => [...prev, String(tambor.id)]);
-                                } else {
-                                  setSelectedTambores(prev => prev.filter(id => id !== String(tambor.id)));
-                                }
-                              }}
-                              style={{ width: 20, height: 20 }}
-                            />
-                          </Flex>
-                          <Box fontSize="sm" color="gray.700">
-                            <div><strong>Apicultor:</strong> {apicultor}</div>
-                            <div><strong>Apiario(s):</strong> {nombresApiarios}</div>
-                            {/* Puedes agregar más campos si lo deseas */}
-                          </Box>
-                        </Box>
-                      );
-                    })}
-                  </Flex>
-                </Box>
-                {selectedTambores.length > 0 && (
-                  <Box mt={2} color="gray.600" fontSize="sm">
-                    <strong>{selectedTambores.length}</strong> tambor(es) seleccionado(s)
-                  </Box>
-                )}
-              </Box>
-            </FormControl>
-            <FormControl mb={4} isRequired>
-              <FormLabel>Fecha de Extracción</FormLabel>
-              <Input type="date" name="fecha_extraccion" value={form.fecha_extraccion} onChange={handleChange} />
-            </FormControl>
-            <FormControl mb={4} isRequired>
-              <FormLabel>Fecha de Análisis</FormLabel>
-              <Input type="date" name="fecha_analisis" value={form.fecha_analisis} onChange={handleChange} />
-            </FormControl>
-            <FormControl mb={4}>
-              <FormLabel>Observaciones</FormLabel>
-              <Textarea name="observaciones" value={form.observaciones} onChange={handleChange} />
-            </FormControl>
-            {/* El campo analista se envía automáticamente con el id del usuario logueado, reemplazar el valor de analistaId por el ID real del usuario autenticado. */}
-            {error && <Text color="red.500">{error}</Text>}
-            <Button colorScheme="yellow" type="submit" isLoading={loading} w="100%">
-              Crear muestra
-            </Button>
-          </form>
+          <FormControl mb={2} isRequired w="100%">
+            <FormLabel>Analista</FormLabel>
+            <ChakraSelect name="analista" value={form.analista} onChange={handleChange} placeholder="Seleccione un analista">
+              {analistas.map(analista => (
+                <option key={analista.id} value={analista.id}>
+                  {analista.nombres} {analista.apellidos}
+                </option>
+              ))}
+            </ChakraSelect>
+          </FormControl>
+          <Flex direction={{ base: 'column', md: 'row' }} gap={6} w="100%">
+            {/* Izquierda: Tambores disponibles */}
+            <Box flex={1} bg="gray.100" p={4} rounded="md" minH="400px">
+              <Text fontWeight="bold" mb={2} color="blue.800">Tambores disponibles</Text>
+              <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+                {tamboresDisponibles.length === 0 && <Text color="gray.500">No hay tambores disponibles.</Text>}
+                {tamboresDisponibles.map(tambor => {
+                  const primerApiario = tambor.apiarios && tambor.apiarios.length > 0 ? tambor.apiarios[0] : null;
+                  const apicultor = primerApiario && primerApiario.apicultor
+                    ? `${primerApiario.apicultor.nombre} ${primerApiario.apicultor.apellido}`
+                    : '-';
+                  const nombresApiarios = tambor.apiarios && tambor.apiarios.length > 0
+                    ? tambor.apiarios.map(a => a.nombre_apiario).join(', ')
+                    : '-';
+                  const fechaExtraccion = tambor.fecha_de_extraccion ? new Date(tambor.fecha_de_extraccion).toLocaleDateString() : '-';
+                  const tipo = tambor.fecha_de_extraccion ? 'Interno' : 'Externo';
+                  const badgeColor = tambor.fecha_de_extraccion ? 'green' : 'orange';
+                  return (
+                    <Box
+                      key={tambor.id}
+                      borderWidth={2}
+                      borderColor="blue.200"
+                      bg="white"
+                      borderRadius="md"
+                      p={3}
+                      boxShadow="sm"
+                      cursor="pointer"
+                      _hover={{ boxShadow: 'md', borderColor: 'blue.400', bg: 'blue.50' }}
+                      transition="all 0.2s"
+                      onClick={() => handleAgregarTambor(tambor.id)}
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="flex-start"
+                    >
+                      <HStack w="100%" justify="space-between">
+                        <Text fontWeight="bold" fontSize="xl" color="blue.700">#{tambor.num_registro}</Text>
+                        <Badge colorScheme={badgeColor}>{tipo}</Badge>
+                      </HStack>
+                      <Text fontSize="sm" color="gray.700"><b>Apiario:</b> {nombresApiarios}</Text>
+                      <Text fontSize="sm" color="gray.700"><b>Productor:</b> {apicultor}</Text>
+                      <Text fontSize="sm" color="gray.700"><b>Fecha extracción:</b> {fechaExtraccion}</Text>
+                    </Box>
+                  );
+                })}
+              </SimpleGrid>
+            </Box>
+            {/* Derecha: Tambores seleccionados y datos pool */}
+            <Box flex={1} bg="gray.100" p={4} rounded="md" minH="400px">
+              <Text fontWeight="bold" mb={2} color="blue.800">Tambores seleccionados</Text>
+              <VStack align="stretch" spacing={2} mb={4}>
+                {tamboresSeleccionados.length === 0 && <Text color="gray.500">Seleccione tambores de la izquierda</Text>}
+                {tamboresSeleccionados.map(tambor => {
+                  const primerApiario = tambor.apiarios && tambor.apiarios.length > 0 ? tambor.apiarios[0] : null;
+                  const apicultor = primerApiario && primerApiario.apicultor
+                    ? `${primerApiario.apicultor.nombre} ${primerApiario.apicultor.apellido}`
+                    : '-';
+                  const nombresApiarios = tambor.apiarios && tambor.apiarios.length > 0
+                    ? tambor.apiarios.map(a => a.nombre_apiario).join(', ')
+                    : '-';
+                  const fechaExtraccion = tambor.fecha_de_extraccion ? new Date(tambor.fecha_de_extraccion).toLocaleDateString() : '-';
+                  const tipo = tambor.fecha_de_extraccion ? 'Interno' : 'Externo';
+                  const badgeColor = tambor.fecha_de_extraccion ? 'green' : 'orange';
+                  return (
+                    <Box
+                      key={tambor.id}
+                      borderWidth={2}
+                      borderColor="blue.300"
+                      bg="white"
+                      borderRadius="md"
+                      p={3}
+                      boxShadow="sm"
+                      display="flex"
+                      flexDirection="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
+                      <Box>
+                        <HStack>
+                          <Text fontWeight="bold" fontSize="lg" color="blue.700">#{tambor.num_registro}</Text>
+                          <Badge colorScheme={badgeColor}>{tipo}</Badge>
+                        </HStack>
+                        <Text fontSize="sm" color="gray.700"><b>Apiario:</b> {nombresApiarios}</Text>
+                        <Text fontSize="sm" color="gray.700"><b>Productor:</b> {apicultor}</Text>
+                        <Text fontSize="sm" color="gray.700"><b>Fecha extracción:</b> {fechaExtraccion}</Text>
+                      </Box>
+                      <IconButton
+                        aria-label="Quitar tambor"
+                        icon={<CloseIcon boxSize={4} />}
+                        colorScheme="red"
+                        variant="ghost"
+                        onClick={() => handleQuitarTambor(tambor.id)}
+                      />
+                    </Box>
+                  );
+                })}
+              </VStack>
+              <form onSubmit={handleSubmit}>
+                <FormControl mb={3} isRequired>
+                  <FormLabel>Fecha de Análisis</FormLabel>
+                  <Input type="date" name="fecha_analisis" value={form.fecha_analisis} onChange={handleChange} />
+                </FormControl>
+                <FormControl mb={3}>
+                  <FormLabel>Observaciones</FormLabel>
+                  <Textarea name="observaciones" value={form.observaciones} onChange={handleChange} />
+                </FormControl>
+                {error && <Text color="red.500" mb={2}>{error}</Text>}
+                <Button colorScheme="blue" type="submit" isLoading={loading} w="100%" leftIcon={<CheckCircleIcon boxSize={5} />}>
+                  Crear pool
+                </Button>
+                <Button mt={2} colorScheme="gray" variant="outline" w="100%" onClick={() => window.location.href = '/muestras'}>
+                  Ir a lista de pools
+                </Button>
+              </form>
+            </Box>
+          </Flex>
         </VStack>
       </Box>
     </Flex>

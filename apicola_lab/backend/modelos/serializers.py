@@ -45,7 +45,6 @@ class PoolSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pool
         fields = '__all__'
-        read_only_fields = ['num_registro']
 
 class MuestraTamborSerializer(serializers.ModelSerializer):
     class Meta:
@@ -76,7 +75,7 @@ class MuestraDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Pool
-        fields = '__all__'
+        exclude = ['fecha_extraccion']
 
 class AnalisisPalinologicoDetailSerializer(serializers.ModelSerializer):
     pool = PoolSerializer(read_only=True)
@@ -120,4 +119,4 @@ class TamborWithApiariosSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MuestraTambor
-        fields = ['id', 'num_registro', 'apiarios']
+        fields = ['id', 'num_registro', 'fecha_de_extraccion', 'apiarios']

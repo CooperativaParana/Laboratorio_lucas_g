@@ -213,11 +213,8 @@ class EstadisticasView(APIView):
         }
 
         # Estadísticas de muestras por mes
-        muestras_por_mes = Pool.objects.annotate(
-            mes=TruncMonth('fecha_extraccion')
-        ).values('mes').annotate(
-            total=Count('id')
-        ).order_by('mes')
+        # Eliminar estadísticas por fecha_extraccion del Pool, ya que ahora es atributo del tambor
+        muestras_por_mes = []
 
         # Estadísticas de análisis por especie
         analisis_por_especie = AnalisisPalinologico.objects.values(

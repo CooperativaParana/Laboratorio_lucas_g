@@ -17,7 +17,6 @@ class Pool(models.Model):
         through='ContienePool', # Si no anda, cambiar a 'modelo.ContienePool'
         related_name='pools'
     )
-    fecha_extraccion = models.DateField()
     fecha_analisis = models.DateField(null=True, blank=True)
     num_registro = models.CharField(max_length=50, unique=True, null=True, blank=True)
     observaciones = models.TextField(blank=True, null=True)
@@ -30,17 +29,7 @@ class Pool(models.Model):
         verbose_name_plural = 'Pools'
         indexes = [
             models.Index(fields=['analista'], name='idx_pool_analista'),
-            models.Index(fields=['fecha_extraccion', 'fecha_analisis'], name='idx_pool_fechas'),
         ]
-
-    def clean(self):
-        """Validación personalizada para fechas"""
-        from django.core.exceptions import ValidationError
-        if self.fecha_analisis and self.fecha_extraccion:
-            if self.fecha_analisis < self.fecha_extraccion:
-                raise ValidationError(
-                    'La fecha de análisis no puede ser anterior a la fecha de extracción'
-                )
 
     def save(self, *args, **kwargs):
         if not self.num_registro or self.num_registro == '':
@@ -54,4 +43,4 @@ class Pool(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Pool {self.num_registro or self.id} - {self.fecha_extraccion}"
+        return f"Pool {self.num_registro or self.id}"

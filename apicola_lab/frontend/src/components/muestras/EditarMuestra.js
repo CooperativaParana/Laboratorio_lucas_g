@@ -6,6 +6,9 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
+// Agregar el audio para sumar
+const audioSumar = new Audio(process.env.PUBLIC_URL + '/sumar1.mp3');
+
 const EditarMuestra = () => {
   const { id } = useParams();
   const [especies, setEspecies] = useState([]);
@@ -54,6 +57,8 @@ const EditarMuestra = () => {
 
   const incrementarConteo = (especieId) => {
     setConteos(prev => ({ ...prev, [especieId]: (prev[especieId] || 0) + 1 }));
+    audioSumar.currentTime = 0;
+    audioSumar.play();
   };
 
   const decrementarConteo = (especieId) => {
@@ -156,11 +161,13 @@ const EditarMuestra = () => {
           <VStack key={especieId} spacing={2} w="100%" bg="white" p={3} rounded="md" boxShadow="sm">
             <HStack spacing={4} w="100%" justify="center">
               <IconButton
-                icon={<AddIcon />}
-                colorScheme="green"
-                aria-label="Sumar"
-                onClick={() => incrementarConteo(especieId)}
-                size="sm"
+                icon={<MinusIcon />}
+                colorScheme="red"
+                aria-label="Restar"
+                onClick={() => decrementarConteo(especieId)}
+                size="md"
+                w="40px"
+                h="40px"
               />
               <VStack spacing={0} flex={1}>
                 <Text fontSize="2xl" fontWeight="bold" textAlign="center">{conteos[especieId] || 0}</Text>
@@ -172,11 +179,13 @@ const EditarMuestra = () => {
                 </HStack>
               </VStack>
               <IconButton
-                icon={<MinusIcon />}
-                colorScheme="red"
-                aria-label="Restar"
-                onClick={() => decrementarConteo(especieId)}
-                size="sm"
+                icon={<AddIcon />}
+                colorScheme="green"
+                aria-label="Sumar"
+                onClick={() => incrementarConteo(especieId)}
+                size="lg"
+                w="56px"
+                h="56px"
               />
             </HStack>
             <HStack spacing={2} w="100%" justify="center">

@@ -8,11 +8,24 @@ const API_URL = process.env.REACT_APP_API_URL;
 const ListaMuestras = () => {
   const [muestras, setMuestras] = useState([]);
   const [analistas, setAnalistas] = useState([]);
+  const [analisisPorPool, setAnalisisPorPool] = useState({}); // { poolId: true/false }
   const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`${API_URL}/muestras/`)
-      .then(res => setMuestras(res.data))
+      .then(res => {
+        setMuestras(res.data);
+        // Por cada muestra, consultar si tiene análisis palinológico
+        res.data.forEach(muestra => {
+          axios.get(`${API_URL}/analisis-palinologicos/?pool=${muestra.id}`)
+            .then(resp => {
+              setAnalisisPorPool(prev => ({ ...prev, [muestra.id]: resp.data.length > 0 }));
+            })
+            .catch(() => {
+              setAnalisisPorPool(prev => ({ ...prev, [muestra.id]: false }));
+            });
+        });
+      })
       .catch(err => console.error('Error al cargar muestras:', err));
     axios.get(`${API_URL}/analistas/`)
       .then(res => setAnalistas(res.data))
@@ -47,7 +60,7 @@ const ListaMuestras = () => {
                 <b>ID:</b> {muestra.id} | <b>Analista:</b> {getNombreAnalista(muestra.analista)} | <b>Fecha análisis:</b> {muestra.fecha_analisis}
               </Text>
               <Button colorScheme="yellow" onClick={() => navigate(`/editar-muestra/${muestra.id}`)}>
-                Editar
+                {analisisPorPool[muestra.id] ? 'Editar conteo' : 'Iniciar conteo'}
               </Button>
             </HStack>
           ))}

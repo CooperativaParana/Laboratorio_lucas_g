@@ -5,6 +5,7 @@ from modelos.models.Apiario_model import Apiario
 class MuestraTambor(models.Model):
     """Modelo para los tambores de miel"""
     num_registro = models.CharField(max_length=50, unique=True)
+    fecha_de_extraccion = models.DateField(null=True, blank=True)
     apiarios = models.ManyToManyField(
         Apiario, 
         through='TamborApiario',
