@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, Flex, Text, VStack, HStack, Heading, SimpleGrid, IconButton, Alert, AlertIcon, Center, Select } from '@chakra-ui/react';
-import { AddIcon, MinusIcon, ArrowBackIcon } from '@chakra-ui/icons';
+import { AddIcon, MinusIcon, ArrowBackIcon, EditIcon, CheckIcon } from '@chakra-ui/icons';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -21,16 +21,22 @@ const EditarMuestra = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const [fechaAnalisis, setFechaAnalisis] = useState('');
+  const [editandoFecha, setEditandoFecha] = useState(false);
 
   useEffect(() => {
     // Cargar especies y análisis actuales
     axios.get(`${API_URL}/especies/`)
       .then(res => setEspecies(res.data))
       .catch(err => setError('Error al cargar especies: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
+    axios.get(`${API_URL}/muestras/${id}/`)
+      .then(res => {
+        setFechaAnalisis(res.data.fecha_analisis || '');
+      })
+      .catch(() => setFechaAnalisis(''));
     axios.get(`${API_URL}/analisis-palinologicos/?pool=${id}`)
       .then(res => {
         setAnalisis(res.data);
-        // Marcar seleccionadas (array de IDs)
         setEspeciesSeleccionadas(res.data.map(a => a.especie));
         const conteosMap = {};
         const marcasMap = {};
@@ -123,6 +129,15 @@ const EditarMuestra = () => {
     setLoading(false);
   };
 
+  const handleFechaAnalisisSave = async () => {
+    try {
+      await axios.patch(`${API_URL}/muestras/${id}/`, { fecha_analisis: fechaAnalisis });
+      setEditandoFecha(false);
+    } catch (err) {
+      setError('Error al actualizar la fecha de análisis: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
+    }
+  };
+
   // Modo selección visual
   const ModoSeleccion = () => (
     <VStack spacing={4} align="center" w={{ base: '100%', md: '600px' }}>
@@ -154,7 +169,44 @@ const EditarMuestra = () => {
   // Modo conteo visual
   const ModoConteo = () => (
     <VStack spacing={4} align="center" w={{ base: '100%', md: '600px' }}>
-      <Heading size="md" mb={4}>Conteo de granos de polen</Heading>
+      <Heading size="md" mb={2}>Conteo de granos de polen</Heading>
+      <Box w="100%" mb={2}>
+        <Text fontWeight="bold" fontSize="md" color="blue.700" mb={1}>Fecha de análisis:</Text>
+        {editandoFecha ? (
+          <HStack>
+            <input
+              type="date"
+              value={fechaAnalisis || ''}
+              onChange={e => setFechaAnalisis(e.target.value)}
+              style={{ padding: 6, borderRadius: 4, border: '1px solid #CBD5E0' }}
+            />
+            <IconButton
+              icon={<CheckIcon />}
+              colorScheme="green"
+              size="sm"
+              aria-label="Guardar fecha"
+              onClick={handleFechaAnalisisSave}
+            />
+            <IconButton
+              icon={<ArrowBackIcon />}
+              colorScheme="gray"
+              size="sm"
+              aria-label="Cancelar"
+              onClick={() => setEditandoFecha(false)}
+            />
+          </HStack>
+        ) : (
+          <Button
+            leftIcon={<EditIcon />}
+            colorScheme="blue"
+            variant="outline"
+            size="sm"
+            onClick={() => setEditandoFecha(true)}
+          >
+            {fechaAnalisis ? new Date(fechaAnalisis).toLocaleDateString() : 'Sin fecha'}
+          </Button>
+        )}
+      </Box>
       {especiesSeleccionadas.map((especieId) => {
         const especie = especies.find(e => e.id === especieId);
         return (

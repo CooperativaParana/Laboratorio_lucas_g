@@ -52,8 +52,8 @@ const AgregarMuestra = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    if (!form.analista || selectedTambores.length === 0 || !form.fecha_analisis) {
-      setError('Debe seleccionar un analista, al menos un tambor y la fecha de análisis.');
+    if (!form.analista || selectedTambores.length === 0) {
+      setError('Debe seleccionar un analista y al menos un tambor.');
       setLoading(false);
       return;
     }
@@ -198,7 +198,7 @@ const AgregarMuestra = () => {
                 })}
               </VStack>
               <form onSubmit={handleSubmit}>
-                <FormControl mb={3} isRequired>
+                <FormControl mb={3}>
                   <FormLabel>Fecha de Análisis</FormLabel>
                   <Input type="date" name="fecha_analisis" value={form.fecha_analisis} onChange={handleChange} />
                 </FormControl>

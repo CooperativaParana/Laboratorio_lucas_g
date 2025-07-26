@@ -9,6 +9,10 @@ const AnalisisPalinologico = () => {
     navigate('/agregar-muestra/palinologico');
   };
 
+  const handleHacerConteo = () => {
+    navigate('/muestras');
+  };
+
   const handleReportes = () => {
     navigate('/reportes/palinologico');
   };
@@ -45,7 +49,15 @@ const AnalisisPalinologico = () => {
               w="100%"
               onClick={handleAgregarMuestra}
             >
-              Crear Muestra
+              Crear Grupo
+            </Button>
+            <Button
+              colorScheme="yellow"
+              size="lg"
+              w="100%"
+              onClick={handleHacerConteo}
+            >
+              Hacer Conteo
             </Button>
             <Button
               colorScheme="green"
