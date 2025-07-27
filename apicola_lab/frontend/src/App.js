@@ -16,6 +16,7 @@ import TodosAnalisis from './components/analisis/TodosAnalisis';
 import AgregarMuestra1 from './components/muestras/AgregarMuestra1';
 import EditarMuestra1 from './components/muestras/EditarMuestra1';
 import ListaMuestrasFisicoquimicas from './components/muestras/ListaMuestrasFisicoquimicas';
+import VerAnalisis from './components/analisis/VerAnalisis';
 import './App.css';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
           <Route path="/agregar-muestra/fisicoquimico" element={<AgregarMuestra1 />} />
           <Route path="/editar-muestra1/:id" element={<EditarMuestra1 />} />
           <Route path="/muestras-fisicoquimicas" element={<ListaMuestrasFisicoquimicas />} />
+          <Route path="/ver-analisis" element={<VerAnalisis />} />
         </Routes>
       </div>
     </Router>

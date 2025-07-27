@@ -153,11 +153,7 @@ class MuestraViewSet(viewsets.ModelViewSet):
 class AnalisisPalinologicoViewSet(viewsets.ModelViewSet):
     queryset = AnalisisPalinologico.objects.all()
     permission_classes = [permissions.AllowAny]
-
-    def get_serializer_class(self):
-        if self.action == 'retrieve':
-            return AnalisisPalinologicoDetailSerializer
-        return AnalisisPalinologicoSerializer
+    serializer_class = AnalisisPalinologicoDetailSerializer
     
     def get_queryset(self):
         queryset = super().get_queryset()

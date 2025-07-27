@@ -60,6 +60,14 @@ const AnalisisPalinologico = () => {
               Hacer Conteo
             </Button>
             <Button
+              colorScheme="purple"
+              size="lg"
+              w="100%"
+              onClick={() => navigate('/ver-analisis')}
+            >
+              Ver Análisis
+            </Button>
+            <Button
               colorScheme="green"
               size="lg"
               w="100%"
