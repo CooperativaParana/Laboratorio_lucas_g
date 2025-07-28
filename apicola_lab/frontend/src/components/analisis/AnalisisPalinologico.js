@@ -44,7 +44,7 @@ const AnalisisPalinologico = () => {
           </Text>
           <VStack spacing={4} w="100%">
             <Button
-              colorScheme="blue"
+              colorScheme="orange"
               size="lg"
               w="100%"
               onClick={handleAgregarMuestra}
@@ -68,7 +68,7 @@ const AnalisisPalinologico = () => {
               Ver Análisis
             </Button>
             <Button
-              colorScheme="green"
+              colorScheme="blue"
               size="lg"
               w="100%"
               onClick={handleReportes}
@@ -76,7 +76,7 @@ const AnalisisPalinologico = () => {
               Reportes
             </Button>
             <Button
-              colorScheme="purple"
+              colorScheme="green"
               size="lg"
               w="100%"
               onClick={handleGraficasConsultas}
