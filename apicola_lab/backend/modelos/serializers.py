@@ -75,7 +75,7 @@ class MuestraDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Pool
-        exclude = ['fecha_extraccion']
+        fields = ['id', 'analista', 'tambores', 'fecha_analisis', 'num_registro', 'observaciones', 'created_at', 'updated_at']
 
 class AnalisisPalinologicoDetailSerializer(serializers.ModelSerializer):
     pool = PoolSerializer(read_only=True)

@@ -93,14 +93,14 @@ const AgregarMuestra = () => {
           </Text>
           <FormControl mb={2} isRequired w="100%">
             <FormLabel>Analista</FormLabel>
-            <ChakraSelect name="analista" value={form.analista} onChange={handleChange} placeholder="Seleccione un analista">
-              {analistas.map(analista => (
-                <option key={analista.id} value={analista.id}>
-                  {analista.nombres} {analista.apellidos}
-                </option>
-              ))}
-            </ChakraSelect>
-          </FormControl>
+              <ChakraSelect name="analista" value={form.analista} onChange={handleChange} placeholder="Seleccione un analista">
+                {analistas.map(analista => (
+                  <option key={analista.id} value={analista.id}>
+                    {analista.nombres} {analista.apellidos}
+                  </option>
+                ))}
+              </ChakraSelect>
+            </FormControl>
           <Flex direction={{ base: 'column', md: 'row' }} gap={6} w="100%">
             {/* Izquierda: Tambores disponibles */}
             <Box flex={1} bg="gray.100" p={4} rounded="md" minH="400px">
@@ -124,7 +124,7 @@ const AgregarMuestra = () => {
                       borderWidth={2}
                       borderColor="blue.200"
                       bg="white"
-                      borderRadius="md"
+                  borderRadius="md"
                       p={3}
                       boxShadow="sm"
                       cursor="pointer"
@@ -153,23 +153,23 @@ const AgregarMuestra = () => {
               <VStack align="stretch" spacing={2} mb={4}>
                 {tamboresSeleccionados.length === 0 && <Text color="gray.500">Seleccione tambores de la izquierda</Text>}
                 {tamboresSeleccionados.map(tambor => {
-                  const primerApiario = tambor.apiarios && tambor.apiarios.length > 0 ? tambor.apiarios[0] : null;
-                  const apicultor = primerApiario && primerApiario.apicultor
-                    ? `${primerApiario.apicultor.nombre} ${primerApiario.apicultor.apellido}`
-                    : '-';
-                  const nombresApiarios = tambor.apiarios && tambor.apiarios.length > 0
-                    ? tambor.apiarios.map(a => a.nombre_apiario).join(', ')
-                    : '-';
+                      const primerApiario = tambor.apiarios && tambor.apiarios.length > 0 ? tambor.apiarios[0] : null;
+                      const apicultor = primerApiario && primerApiario.apicultor
+                        ? `${primerApiario.apicultor.nombre} ${primerApiario.apicultor.apellido}`
+                        : '-';
+                      const nombresApiarios = tambor.apiarios && tambor.apiarios.length > 0
+                        ? tambor.apiarios.map(a => a.nombre_apiario).join(', ')
+                        : '-';
                   const fechaExtraccion = tambor.fecha_de_extraccion ? new Date(tambor.fecha_de_extraccion).toLocaleDateString() : '-';
                   const tipo = tambor.fecha_de_extraccion ? 'Interno' : 'Externo';
                   const badgeColor = tambor.fecha_de_extraccion ? 'green' : 'orange';
-                  return (
-                    <Box
-                      key={tambor.id}
+                      return (
+                        <Box
+                          key={tambor.id}
                       borderWidth={2}
                       borderColor="blue.300"
                       bg="white"
-                      borderRadius="md"
+                          borderRadius="md"
                       p={3}
                       boxShadow="sm"
                       display="flex"
@@ -193,27 +193,27 @@ const AgregarMuestra = () => {
                         variant="ghost"
                         onClick={() => handleQuitarTambor(tambor.id)}
                       />
-                    </Box>
-                  );
-                })}
+                        </Box>
+                      );
+                    })}
               </VStack>
               <form onSubmit={handleSubmit}>
                 <FormControl mb={3}>
-                  <FormLabel>Fecha de Análisis</FormLabel>
-                  <Input type="date" name="fecha_analisis" value={form.fecha_analisis} onChange={handleChange} />
-                </FormControl>
+              <FormLabel>Fecha de Análisis</FormLabel>
+              <Input type="date" name="fecha_analisis" value={form.fecha_analisis} onChange={handleChange} />
+            </FormControl>
                 <FormControl mb={3}>
-                  <FormLabel>Observaciones</FormLabel>
-                  <Textarea name="observaciones" value={form.observaciones} onChange={handleChange} />
-                </FormControl>
+              <FormLabel>Observaciones</FormLabel>
+              <Textarea name="observaciones" value={form.observaciones} onChange={handleChange} />
+            </FormControl>
                 {error && <Text color="red.500" mb={2}>{error}</Text>}
                 <Button colorScheme="blue" type="submit" isLoading={loading} w="100%" leftIcon={<CheckCircleIcon boxSize={5} />}>
                   Crear pool
                 </Button>
                 <Button mt={2} colorScheme="gray" variant="outline" w="100%" onClick={() => window.location.href = '/muestras'}>
                   Ir a lista de pools
-                </Button>
-              </form>
+            </Button>
+          </form>
             </Box>
           </Flex>
         </VStack>

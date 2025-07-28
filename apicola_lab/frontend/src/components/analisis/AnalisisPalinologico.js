@@ -14,7 +14,7 @@ const AnalisisPalinologico = () => {
   };
 
   const handleReportes = () => {
-    navigate('/reportes/palinologico');
+    navigate('/reporte-porcentajes');
   };
 
   const handleGraficasConsultas = () => {
