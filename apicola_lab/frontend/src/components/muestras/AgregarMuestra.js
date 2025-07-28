@@ -20,6 +20,7 @@ const AgregarMuestra = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pools, setPools] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
@@ -31,18 +32,52 @@ const AgregarMuestra = () => {
     axios.get(`${API_URL}/tambores/`)
       .then(res => setTambores(res.data))
       .catch(err => setError('Error al cargar tambores: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
+    // Obtener la lista de pools existentes para validar tambores
+    axios.get(`${API_URL}/muestras/`)
+      .then(res => setPools(res.data))
+      .catch(err => console.error('Error al cargar pools:', err));
   }, []);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Nuevo: separar tambores seleccionados y disponibles
-  const tamboresDisponibles = tambores.filter(t => !selectedTambores.includes(String(t.id)));
+  // Función para verificar si un tambor ya está en algún pool
+  const tamborYaEnPool = (tamborId) => {
+    return pools.some(pool => 
+      pool.tambores && pool.tambores.some(t => t.id === tamborId)
+    );
+  };
+
+  // Función para verificar tambores duplicados en la selección actual
+  const hayTamboresDuplicados = () => {
+    const tamboresIds = selectedTambores.map(id => parseInt(id));
+    return new Set(tamboresIds).size !== tamboresIds.length;
+  };
+
+  // Función para obtener tambores disponibles (no en ningún pool)
+  const tamboresDisponibles = tambores.filter(t => 
+    !selectedTambores.includes(String(t.id)) && !tamborYaEnPool(t.id)
+  );
+
+  // Función para obtener tambores ya usados en otros pools
+  const tamboresEnOtrosPools = tambores.filter(t => tamborYaEnPool(t.id));
+
   const tamboresSeleccionados = tambores.filter(t => selectedTambores.includes(String(t.id)));
 
   const handleAgregarTambor = (id) => {
+    // Verificar que no esté ya seleccionado
+    if (selectedTambores.includes(String(id))) {
+      setError('Este tambor ya está seleccionado.');
+      return;
+    }
+    // Verificar que no esté en otro pool
+    if (tamborYaEnPool(id)) {
+      setError('Este tambor ya está asignado a otro pool.');
+      return;
+    }
     setSelectedTambores(prev => [...prev, String(id)]);
+    setError(''); // Limpiar error si la selección es válida
   };
   const handleQuitarTambor = (id) => {
     setSelectedTambores(prev => prev.filter(tid => tid !== String(id)));
@@ -52,11 +87,29 @@ const AgregarMuestra = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    if (!form.analista || selectedTambores.length === 0) {
-      setError('Debe seleccionar un analista y al menos un tambor.');
-      setLoading(false);
-      return;
-    }
+   
+   // Validaciones antes de crear el pool
+   if (!form.analista || selectedTambores.length === 0) {
+     setError('Debe seleccionar un analista y al menos un tambor.');
+     setLoading(false);
+     return;
+   }
+   
+   // Verificar tambores duplicados en la selección
+   if (hayTamboresDuplicados()) {
+     setError('No puede seleccionar el mismo tambor más de una vez.');
+     setLoading(false);
+     return;
+   }
+   
+   // Verificar que los tambores no estén ya en otros pools
+   const tamboresEnOtrosPools = selectedTambores.filter(tamborId => tamborYaEnPool(parseInt(tamborId)));
+   if (tamboresEnOtrosPools.length > 0) {
+     setError(`Los siguientes tambores ya están asignados a otros pools: ${tamboresEnOtrosPools.join(', ')}`);
+     setLoading(false);
+     return;
+   }
+   
     try {
       const res = await axios.post(`${API_URL}/muestras/`, form);
       const poolId = res.data.id;
@@ -68,7 +121,7 @@ const AgregarMuestra = () => {
         })
       ));
       toast({
-        title: 'Pool creado',
+        title: 'Grupo creado',
         description: `Analista: ${analistas.find(a => a.id === Number(form.analista))?.nombres || ''}\nTambores: ${tamboresSeleccionados.map(t => t.num_registro).join(', ')}\nFecha análisis: ${form.fecha_analisis}`,
         status: 'success',
         duration: 5000,
@@ -78,6 +131,10 @@ const AgregarMuestra = () => {
       // Resetear formulario
       setForm({ analista: '', fecha_analisis: '', num_registro: '', observaciones: '' });
       setSelectedTambores([]);
+      // Recargar pools para actualizar la lista de tambores disponibles
+      axios.get(`${API_URL}/muestras/`)
+        .then(res => setPools(res.data))
+        .catch(err => console.error('Error al recargar pools:', err));
     } catch (err) {
       setError('Error al crear la muestra o asociar tambores: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     }
@@ -89,7 +146,7 @@ const AgregarMuestra = () => {
       <Box bg="white" p={6} rounded="lg" boxShadow="lg" w={{ base: '100%', md: '1100px' }}>
         <VStack spacing={6} align="center" w="100%">
           <Text as="h1" fontSize="3xl" fontWeight="bold" mb={2} color="blue.700">
-            Crear Pool - Análisis Palinológico
+            Crear Grupo - Análisis Palinológico
           </Text>
           <FormControl mb={2} isRequired w="100%">
             <FormLabel>Analista</FormLabel>
@@ -105,8 +162,10 @@ const AgregarMuestra = () => {
             {/* Izquierda: Tambores disponibles */}
             <Box flex={1} bg="gray.100" p={4} rounded="md" minH="400px">
               <Text fontWeight="bold" mb={2} color="blue.800">Tambores disponibles</Text>
+              {tamboresDisponibles.length === 0 && (
+                <Text color="gray.500" mb={4}>No hay tambores disponibles para seleccionar.</Text>
+              )}
               <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
-                {tamboresDisponibles.length === 0 && <Text color="gray.500">No hay tambores disponibles.</Text>}
                 {tamboresDisponibles.map(tambor => {
                   const primerApiario = tambor.apiarios && tambor.apiarios.length > 0 ? tambor.apiarios[0] : null;
                   const apicultor = primerApiario && primerApiario.apicultor
@@ -146,6 +205,46 @@ const AgregarMuestra = () => {
                   );
                 })}
               </SimpleGrid>
+             
+              {/* Sección de tambores ya asignados */}
+              {tamboresEnOtrosPools.length > 0 && (
+                <Box mt={6} p={4} bg="red.50" rounded="md" borderWidth={1} borderColor="red.200">
+                  <Text fontWeight="bold" color="red.700" mb={2}>Tambores ya asignados a otros pools:</Text>
+                  <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={3}>
+                    {tamboresEnOtrosPools.map(tambor => {
+                      const primerApiario = tambor.apiarios && tambor.apiarios.length > 0 ? tambor.apiarios[0] : null;
+                      const apicultor = primerApiario && primerApiario.apicultor
+                        ? `${primerApiario.apicultor.nombre} ${primerApiario.apicultor.apellido}`
+                        : '-';
+                      const nombresApiarios = tambor.apiarios && tambor.apiarios.length > 0
+                        ? tambor.apiarios.map(a => a.nombre_apiario).join(', ')
+                        : '-';
+                      const fechaExtraccion = tambor.fecha_de_extraccion ? new Date(tambor.fecha_de_extraccion).toLocaleDateString() : '-';
+                      const tipo = tambor.fecha_de_extraccion ? 'Interno' : 'Externo';
+                      return (
+                        <Box
+                          key={tambor.id}
+                          borderWidth={1}
+                          borderColor="red.300"
+                          bg="white"
+                          borderRadius="md"
+                          p={2}
+                          opacity={0.7}
+                          cursor="not-allowed"
+                        >
+                          <HStack w="100%" justify="space-between">
+                            <Text fontWeight="bold" fontSize="md" color="red.600">#{tambor.num_registro}</Text>
+                            <Badge colorScheme="red" variant="outline">{tipo}</Badge>
+                          </HStack>
+                          <Text fontSize="xs" color="gray.600"><b>Apiario:</b> {nombresApiarios}</Text>
+                          <Text fontSize="xs" color="gray.600"><b>Productor:</b> {apicultor}</Text>
+                          <Text fontSize="xs" color="gray.600"><b>Fecha extracción:</b> {fechaExtraccion}</Text>
+                        </Box>
+                      );
+                    })}
+                  </SimpleGrid>
+                </Box>
+              )}
             </Box>
             {/* Derecha: Tambores seleccionados y datos pool */}
             <Box flex={1} bg="gray.100" p={4} rounded="md" minH="400px">
@@ -208,10 +307,10 @@ const AgregarMuestra = () => {
             </FormControl>
                 {error && <Text color="red.500" mb={2}>{error}</Text>}
                 <Button colorScheme="blue" type="submit" isLoading={loading} w="100%" leftIcon={<CheckCircleIcon boxSize={5} />}>
-                  Crear pool
+                  Crear Grupo
                 </Button>
                 <Button mt={2} colorScheme="gray" variant="outline" w="100%" onClick={() => window.location.href = '/muestras'}>
-                  Ir a lista de pools
+                  Ir a lista de Grupos
             </Button>
           </form>
             </Box>

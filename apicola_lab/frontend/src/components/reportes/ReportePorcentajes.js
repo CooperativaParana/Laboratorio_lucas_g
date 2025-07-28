@@ -19,7 +19,8 @@ import {
   Badge,
   Container,
   Heading,
-  HStack
+  HStack,
+  Tooltip
 } from '@chakra-ui/react';
 import { ArrowBackIcon, DownloadIcon } from '@chakra-ui/icons';
 import { useColorModeValue } from '@chakra-ui/react';
@@ -155,10 +156,10 @@ const ReportePorcentajes = () => {
 
   return (
     <Flex minH="100vh" align="center" justify="center" bg="gray.50" p={4}>
-      <Container maxW="95%" bg={bgColor} p={6} rounded="lg" boxShadow="lg" maxH="90vh" overflow="hidden">
+      <Container maxW="95%" bg={bgColor} p={6} rounded="lg" boxShadow="lg" maxH="95vh" overflow="hidden">
         <VStack spacing={6} align="stretch" h="100%">
           {/* Header */}
-          <Box bg={headerBg} p={4} rounded="lg" color={headerTextColor}>
+          <Box bg={headerBg} p={4} rounded="lg" color={headerTextColor} flexShrink={0}>
             <Flex justify="space-between" align="center">
               <Button 
                 leftIcon={<ArrowBackIcon />} 
@@ -193,14 +194,14 @@ const ReportePorcentajes = () => {
           </Box>
 
           {error && (
-            <Alert status="error">
+            <Alert status="error" flexShrink={0}>
               <AlertIcon />
               {error}
             </Alert>
           )}
 
           {/* Estadísticas del filtrado */}
-          <Box p={4} bg="blue.50" rounded="md">
+          <Box p={4} bg="blue.50" rounded="md" flexShrink={0}>
             <HStack justify="space-between" align="center">
               <VStack align="start" spacing={1}>
                 <Text fontSize="sm" fontWeight="bold" color="blue.700">
@@ -217,17 +218,23 @@ const ReportePorcentajes = () => {
           </Box>
 
           {pools.length === 0 ? (
-            <Text textAlign="center" color="gray.500" fontSize="lg">
+            <Text textAlign="center" color="gray.500" fontSize="lg" flexShrink={0}>
               No hay análisis palinológicos válidos para mostrar.
             </Text>
           ) : (
-            <Box overflowX="auto" overflowY="auto" flex={1}>
+            <Box 
+              overflowX="auto" 
+              overflowY="auto" 
+              flex={1}
+              minH="0"
+              maxH="calc(95vh - 300px)"
+            >
               <TableContainer>
-                <Table variant="striped" size="sm" borderWidth={1} borderColor={borderColor}>
+                <Table variant="striped" size="sm" borderWidth={1} borderColor={borderColor} minW="800px">
                   <Thead position="sticky" top={0} bg={headerBg} zIndex={1}>
                     <Tr>
                       <Th borderWidth={1} borderColor={borderColor} minW="120px" color={headerTextColor}>
-                        Pool ID
+                        GPO ID
                       </Th>
                       <Th borderWidth={1} borderColor={borderColor} minW="100px" color={headerTextColor}>
                         Fecha Análisis
@@ -240,16 +247,45 @@ const ReportePorcentajes = () => {
                           key={especie.id} 
                           borderWidth={1} 
                           borderColor={borderColor}
-                          minW="120px"
+                          minW="140px"
                           textAlign="center"
                           color={headerTextColor}
-                          transform="rotate(-45deg)"
-                          transformOrigin="center"
-                          height="80px"
+                          height="100px"
+                          position="relative"
                         >
-                          <Text fontSize="xs" fontWeight="bold" whiteSpace="nowrap">
-                            {especie.nombre}
-                          </Text>
+                          <Tooltip 
+                            label={especie.nombre} 
+                            placement="top" 
+                            hasArrow
+                            bg="gray.800"
+                            color="white"
+                            fontSize="sm"
+                          >
+                          <Box
+                            position="absolute"
+                            top="50%"
+                            left="50%"
+                            transform="translate(-50%, -50%) rotate(-45deg)"
+                            transformOrigin="center"
+                            width="max-content"
+                            maxW="120px"
+                            cursor="help"
+                          >
+                            <Text 
+                              fontSize="xs" 
+                              fontWeight="bold" 
+                              lineHeight="1.2"
+                              textAlign="center"
+                              wordBreak="break-word"
+                              hyphens="auto"
+                            >
+                              {especie.nombre.length > 15 
+                                ? especie.nombre.substring(0, 15) + '...' 
+                                : especie.nombre
+                              }
+                            </Text>
+                          </Box>
+                          </Tooltip>
                         </Th>
                       ))}
                       <Th borderWidth={1} borderColor={borderColor} minW="80px" color={headerTextColor}>
@@ -320,9 +356,9 @@ const ReportePorcentajes = () => {
             </Box>
           )}
 
-          <Flex justify="space-between" align="center" mt={4}>
+          <Flex justify="space-between" align="center" mt={4} flexShrink={0}>
             <Text fontSize="sm" color="gray.600">
-              Total de pools: {pools.length}
+              Total de GPO: {pools.length}
             </Text>
             <Text fontSize="sm" color="gray.600">
               Total de especies: {especies.length}

@@ -37,12 +37,14 @@ const EditarMuestra = () => {
     axios.get(`${API_URL}/analisis-palinologicos/?pool=${id}`)
       .then(res => {
         setAnalisis(res.data);
-        setEspeciesSeleccionadas(res.data.map(a => a.especie));
+        // Extraer solo los IDs de las especies, no los objetos completos
+        setEspeciesSeleccionadas(res.data.map(a => a.especie.id || a.especie));
         const conteosMap = {};
         const marcasMap = {};
         res.data.forEach(a => {
-          conteosMap[a.especie] = a.cantidad_granos;
-          marcasMap[a.especie] = a.marca_especial || '';
+          const especieId = a.especie.id || a.especie;
+          conteosMap[especieId] = a.cantidad_granos;
+          marcasMap[especieId] = a.marca_especial || '';
         });
         setConteos(conteosMap);
         setMarcasEspeciales(marcasMap);
@@ -95,10 +97,14 @@ const EditarMuestra = () => {
     setSuccess(false);
     try {
       // 1. Actualizar o crear análisis para especies seleccionadas
-      for (let especie of especiesSeleccionadas) {
-        const cantidad = conteos[especie] || 0;
-        const marcaEspecial = marcasEspeciales[especie] || '';
-        const analisisExistente = analisis.find(a => a.especie === especie);
+      for (let especieId of especiesSeleccionadas) {
+        const cantidad = conteos[especieId] || 0;
+        const marcaEspecial = marcasEspeciales[especieId] || '';
+        // Buscar análisis existente comparando IDs de especies
+        const analisisExistente = analisis.find(a => {
+          const aEspecieId = a.especie.id || a.especie;
+          return aEspecieId === especieId;
+        });
         if (analisisExistente) {
           // PUT para actualizar
           await axios.put(`${API_URL}/analisis-palinologicos/${analisisExistente.id}/`, {
@@ -106,10 +112,10 @@ const EditarMuestra = () => {
             marca_especial: marcaEspecial
           });
         } else {
-          // POST para crear
+          // POST para crear - asegurar que especie sea solo el ID
           await axios.post(`${API_URL}/analisis-palinologicos/`, {
             pool: id,
-            especie: especie,
+            especie: especieId,
             cantidad_granos: cantidad,
             marca_especial: marcaEspecial
           });
@@ -117,7 +123,8 @@ const EditarMuestra = () => {
       }
       // 2. Eliminar análisis de especies que fueron deseleccionadas
       for (let a of analisis) {
-        if (!especiesSeleccionadas.some(e => e === a.especie)) {
+        const aEspecieId = a.especie.id || a.especie;
+        if (!especiesSeleccionadas.some(e => e === aEspecieId)) {
           await axios.delete(`${API_URL}/analisis-palinologicos/${a.id}/`);
         }
       }
@@ -281,10 +288,10 @@ const EditarMuestra = () => {
                 colorScheme="blue"
                 onClick={continuarAConteo}
                 isDisabled={especiesSeleccionadas.length === 0}
-                w="250px"
+                w={{ base: "100%", sm: "250px" }}
                 mb={4}
               >
-                Continuar al conteo ({especiesSeleccionadas.length} especies seleccionadas)
+                Continuar al conteo
               </Button>
             ) : (
               <>
@@ -293,7 +300,7 @@ const EditarMuestra = () => {
                   onClick={handleGuardar}
                   isLoading={loading}
                   isDisabled={especiesSeleccionadas.length === 0}
-                  w="250px"
+                  w={{ base: "100%", sm: "250px" }}
                   mb={4}
                 >
                   Guardar cambios
@@ -302,7 +309,7 @@ const EditarMuestra = () => {
                   colorScheme="gray"
                   variant="outline"
                   onClick={volverASeleccion}
-                  w="250px"
+                  w={{ base: "100%", sm: "250px" }}
                   mb={4}
                 >
                   Volver a selección
@@ -314,7 +321,7 @@ const EditarMuestra = () => {
               colorScheme="gray"
               variant="outline"
               onClick={() => navigate('/muestras')}
-              w="250px"
+              w={{ base: "100%", sm: "250px" }}
             >
               Volver
             </Button>

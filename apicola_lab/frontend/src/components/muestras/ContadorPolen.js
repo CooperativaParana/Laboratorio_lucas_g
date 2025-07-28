@@ -200,10 +200,10 @@ const ContadorPolen = () => {
             colorScheme="blue"
             onClick={continuarAConteo}
             isDisabled={especiesSeleccionadas.length === 0}
-            w="250px"
+            w={{ base: "100%", sm: "250px" }}
             mb={4}
           >
-            Continuar al conteo ({especiesSeleccionadas.length} especies seleccionadas)
+            Continuar al conteo
           </Button>
         ) : (
           <>
@@ -212,7 +212,7 @@ const ContadorPolen = () => {
               onClick={handleGuardar}
               isLoading={loading}
               isDisabled={especiesSeleccionadas.length === 0}
-              w="250px"
+              w={{ base: "100%", sm: "250px" }}
               mb={4}
             >
               Guardar conteos
@@ -221,7 +221,7 @@ const ContadorPolen = () => {
               colorScheme="gray"
               variant="outline"
               onClick={volverASeleccion}
-              w="250px"
+              w={{ base: "100%", sm: "250px" }}
               mb={4}
             >
               Volver a selección
@@ -234,7 +234,7 @@ const ContadorPolen = () => {
           colorScheme="gray"
           variant="outline"
           onClick={() => navigate('/muestras')}
-          w="250px"
+          w={{ base: "100%", sm: "250px" }}
         >
           Volver
         </Button>
