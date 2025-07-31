@@ -19,6 +19,9 @@ const ContadorPolen = () => {
   const navigate = useNavigate();
   const audioSumar = new Audio(process.env.PUBLIC_URL + '/sumar1.mp3');
 
+  // Debug: verificar que el ID se obtiene correctamente
+  console.log('ID del pool obtenido:', id, 'Tipo:', typeof id);
+
   // Responsive: columnas en desktop, una sola columna en móvil
   const columns = useBreakpointValue({ base: 1, md: 1 });
 
@@ -75,16 +78,31 @@ const ContadorPolen = () => {
     setLoading(true);
     setError('');
     setSuccess(false);
+    
+    // Validar que tenemos el ID del pool
+    if (!id) {
+      setError('Error: No se pudo obtener el ID del pool');
+      setLoading(false);
+      return;
+    }
+    
     try {
       for (let especie of especiesSeleccionadas) {
         const cantidad = conteos[especie.id] || 0;
         const marcaEspecial = marcasEspeciales[especie.id] || '';
         
+        // Validar que los datos sean válidos
+        if (!especie.id || isNaN(especie.id)) {
+          setError(`Error: ID de especie inválido para ${especie.nombre_cientifico}`);
+          setLoading(false);
+          return;
+        }
+        
         // Preparar los datos para guardar
         const datosAGuardar = {
-          pool: id,
-          especie: especie.id,
-          cantidad_granos: cantidad
+          pool: parseInt(id), // Convertir a entero
+          especie: parseInt(especie.id), // Convertir a entero
+          cantidad_granos: parseInt(cantidad) // Convertir a entero
         };
         
         // Si hay marca especial, agregarla
@@ -92,11 +110,14 @@ const ContadorPolen = () => {
           datosAGuardar.marca_especial = marcaEspecial;
         }
         
+        console.log('Enviando datos:', datosAGuardar); // Debug
+        
         await axios.post(`${API_URL}/analisis-palinologicos/`, datosAGuardar);
       }
       setSuccess(true);
       setTimeout(() => navigate('/muestras'), 1200);
     } catch (err) {
+      console.error('Error completo:', err); // Debug
       setError('Error al guardar los conteos: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     }
     setLoading(false);

@@ -22,7 +22,7 @@ import {
   HStack,
   Tooltip
 } from '@chakra-ui/react';
-import { ArrowBackIcon, DownloadIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon, DownloadIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useColorModeValue } from '@chakra-ui/react';
 import axios from 'axios';
 
@@ -43,11 +43,23 @@ const ReportePorcentajes = () => {
     cargarAnalisis();
   }, []);
 
+  // Recargar datos cuando el componente recibe el foco
+  useEffect(() => {
+    const handleFocus = () => {
+      cargarAnalisis();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
   const cargarAnalisis = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get(`${API_URL}/analisis-palinologicos/`);
+      // Agregar timestamp para evitar caché sin usar headers problemáticos
+      const timestamp = new Date().getTime();
+      const response = await axios.get(`${API_URL}/analisis-palinologicos/?_t=${timestamp}`);
       setAnalisis(response.data);
     } catch (err) {
       setError('Error al cargar los análisis: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
@@ -182,14 +194,25 @@ const ReportePorcentajes = () => {
                   })}
                 </Text>
               </VStack>
-              <Button
-                leftIcon={<DownloadIcon />}
-                colorScheme="teal"
-                size="sm"
-                onClick={handleDescargarPDF}
-              >
-                Descargar PDF
-              </Button>
+              <HStack spacing={2}>
+                <Button
+                  leftIcon={<RepeatIcon />}
+                  colorScheme="blue"
+                  size="sm"
+                  onClick={cargarAnalisis}
+                  isLoading={loading}
+                >
+                  Recargar
+                </Button>
+                <Button
+                  leftIcon={<DownloadIcon />}
+                  colorScheme="teal"
+                  size="sm"
+                  onClick={handleDescargarPDF}
+                >
+                  Descargar PDF
+                </Button>
+              </HStack>
             </Flex>
           </Box>
 

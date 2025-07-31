@@ -165,6 +165,13 @@ class AnalisisPalinologicoViewSet(viewsets.ModelViewSet):
         if pool_id:
             return queryset.filter(pool=pool_id)
         return queryset
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
     def resumen_especies(self, request):

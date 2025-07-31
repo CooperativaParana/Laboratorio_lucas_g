@@ -16,3 +16,9 @@ Responsabilidades: generar reportes, agregar pendientes de analisis
 Permisos: Acceso completo a los analisis y al sistema.
 Flujo típico: Login → menu → Seleccionar muestra/filtros de muestras → Realizar/consultar análisis → Generar reporte
                            → Agregar/corregir datos
+
+
+
+return pools.some(pool => 
+      pool.tambores && pool.tambores.some(t => t.id === tamborId)
+    );

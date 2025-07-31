@@ -54,7 +54,34 @@ class MuestraTamborSerializer(serializers.ModelSerializer):
 class AnalisisPalinologicoSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnalisisPalinologico
-        fields = '__all__'
+        fields = ['id', 'pool', 'especie', 'cantidad_granos', 'marca_especial', 'porcentaje', 'created_at', 'updated_at']
+    
+    def validate_marca_especial(self, value):
+        """Validar que la marca especial sea válida o esté vacía"""
+        if value is not None and value.strip() == '':
+            return None
+        return value
+    
+    def validate(self, data):
+        """Validación personalizada para el serializer"""
+        # Si es una actualización, no requerir pool y especie
+        if self.instance:
+            return data
+        
+        # Para creación, validar que pool y especie estén presentes
+        if 'pool' not in data:
+            raise serializers.ValidationError("El campo 'pool' es requerido para crear un análisis.")
+        if 'especie' not in data:
+            raise serializers.ValidationError("El campo 'especie' es requerido para crear un análisis.")
+        
+        return data
+    
+    def update(self, instance, validated_data):
+        # Permitir actualización parcial
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
 class AnalisisFisicoQuimicoSerializer(serializers.ModelSerializer):
     class Meta:

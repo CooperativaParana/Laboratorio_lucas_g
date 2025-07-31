@@ -100,37 +100,60 @@ const EditarMuestra = () => {
       for (let especieId of especiesSeleccionadas) {
         const cantidad = conteos[especieId] || 0;
         const marcaEspecial = marcasEspeciales[especieId] || '';
+        
         // Buscar análisis existente comparando IDs de especies
         const analisisExistente = analisis.find(a => {
           const aEspecieId = a.especie.id || a.especie;
           return aEspecieId === especieId;
         });
+        
         if (analisisExistente) {
-          // PUT para actualizar
-          await axios.put(`${API_URL}/analisis-palinologicos/${analisisExistente.id}/`, {
-            cantidad_granos: cantidad,
-            marca_especial: marcaEspecial
-          });
+          // PUT para actualizar - solo enviar los campos que se están actualizando
+          const datosActualizacion = {
+            cantidad_granos: parseInt(cantidad)
+          };
+          
+          // Solo agregar marca_especial si tiene valor
+          if (marcaEspecial && marcaEspecial.trim() !== '') {
+            datosActualizacion.marca_especial = marcaEspecial;
+          }
+          
+          console.log('Actualizando análisis:', analisisExistente.id, "datos actualizacion", datosActualizacion);
+          
+          await axios.put(`${API_URL}/analisis-palinologicos/${analisisExistente.id}/`, datosActualizacion);
         } else {
           // POST para crear - asegurar que especie sea solo el ID
-          await axios.post(`${API_URL}/analisis-palinologicos/`, {
-            pool: id,
-            especie: especieId,
-            cantidad_granos: cantidad,
-            marca_especial: marcaEspecial
-          });
+          const datosCreacion = {
+            pool: parseInt(id),
+            especie: parseInt(especieId),
+            cantidad_granos: parseInt(cantidad)
+          };
+          
+          // Solo agregar marca_especial si tiene valor
+          if (marcaEspecial && marcaEspecial.trim() !== '') {
+            datosCreacion.marca_especial = marcaEspecial;
+          }
+          
+          console.log('Creando nuevo análisis:', datosCreacion);
+          
+          await axios.post(`${API_URL}/analisis-palinologicos/`, datosCreacion);
         }
       }
+      
       // 2. Eliminar análisis de especies que fueron deseleccionadas
       for (let a of analisis) {
         const aEspecieId = a.especie.id || a.especie;
         if (!especiesSeleccionadas.some(e => e === aEspecieId)) {
+          console.log('Eliminando análisis:', a.id);
           await axios.delete(`${API_URL}/analisis-palinologicos/${a.id}/`);
         }
       }
+      
       setSuccess(true);
       setTimeout(() => navigate('/muestras'), 1200);
     } catch (err) {
+      console.error('Error completo:', err);
+      console.error('Error response:', err.response);
       setError('Error al guardar los conteos: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
     }
     setLoading(false);
@@ -180,7 +203,7 @@ const EditarMuestra = () => {
       <Box w="100%" mb={2}>
         <Text fontWeight="bold" fontSize="md" color="blue.700" mb={1}>Fecha de análisis:</Text>
         {editandoFecha ? (
-          <HStack>
+          <HStack justify="center">
             <input
               type="date"
               value={fechaAnalisis || ''}
@@ -210,7 +233,11 @@ const EditarMuestra = () => {
             size="sm"
             onClick={() => setEditandoFecha(true)}
           >
-            {fechaAnalisis ? new Date(fechaAnalisis).toLocaleDateString() : 'Sin fecha'}
+            {fechaAnalisis ? new Date(fechaAnalisis + 'T00:00:00').toLocaleDateString('es-ES', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            }) : 'Sin fecha'}
           </Button>
         )}
       </Box>

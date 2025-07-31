@@ -46,7 +46,7 @@ const ListaMuestras = () => {
       <Box bg="white" p={8} rounded="lg" boxShadow="lg" w={{ base: '90%', md: '700px' }}>
         <VStack spacing={6} align="center">
           <HStack w="100%" justify="space-between" mb={4}>
-            <Button colorScheme="blue" onClick={() => navigate('/menu')}>
+            <Button colorScheme="blue" onClick={() => navigate('/analisis-palinologico')}>
               ← Volver al menú
             </Button>
             <Text as="h1" fontSize="3xl" fontWeight="bold">
@@ -59,7 +59,10 @@ const ListaMuestras = () => {
               <Text>
                 <b>ID:</b> {muestra.id} | <b>Analista:</b> {getNombreAnalista(muestra.analista)} | <b>Fecha análisis:</b> {muestra.fecha_analisis}
               </Text>
-              <Button colorScheme="yellow" onClick={() => navigate(`/editar-muestra/${muestra.id}`)}>
+              <Button 
+                colorScheme={analisisPorPool[muestra.id] ? 'yellow' : 'green'} 
+                onClick={() => navigate(`/editar-muestra/${muestra.id}`)}
+              >
                 {analisisPorPool[muestra.id] ? 'Editar conteo' : 'Iniciar conteo'}
               </Button>
             </HStack>

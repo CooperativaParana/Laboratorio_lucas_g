@@ -44,9 +44,12 @@ const AgregarMuestra = () => {
 
   // Función para verificar si un tambor ya está en algún pool
   const tamborYaEnPool = (tamborId) => {
-    return pools.some(pool => 
-      pool.tambores && pool.tambores.some(t => t.id === tamborId)
-    );
+    return pools.some(pool => {
+      if (!pool.tambores || !Array.isArray(pool.tambores)) {
+        return false;
+      }
+      return pool.tambores.some(t => t && t.id === tamborId);
+    });
   };
 
   // Función para verificar tambores duplicados en la selección actual
@@ -59,6 +62,8 @@ const AgregarMuestra = () => {
   const tamboresDisponibles = tambores.filter(t => 
     !selectedTambores.includes(String(t.id)) && !tamborYaEnPool(t.id)
   );
+
+
 
   // Función para obtener tambores ya usados en otros pools
   const tamboresEnOtrosPools = tambores.filter(t => tamborYaEnPool(t.id));
@@ -161,9 +166,19 @@ const AgregarMuestra = () => {
           <Flex direction={{ base: 'column', md: 'row' }} gap={6} w="100%">
             {/* Izquierda: Tambores disponibles */}
             <Box flex={1} bg="gray.100" p={4} rounded="md" minH="400px">
-              <Text fontWeight="bold" mb={2} color="blue.800">Tambores disponibles</Text>
+              <Text fontWeight="bold" mb={2} color="blue.800">
+                Tambores disponibles ({tamboresDisponibles.length})
+              </Text>
               {tamboresDisponibles.length === 0 && (
-                <Text color="gray.500" mb={4}>No hay tambores disponibles para seleccionar.</Text>
+                <Box p={4} bg="blue.50" rounded="md" borderWidth={1} borderColor="blue.200">
+                  <Text color="blue.700" fontWeight="medium" mb={2}>
+                    📋 No hay tambores disponibles para seleccionar
+                  </Text>
+                  <Text fontSize="sm" color="blue.600">
+                    Todos los tambores han sido asignados a otros grupos de análisis. 
+                    Para crear un nuevo grupo, primero debe liberar tambores de grupos existentes.
+                  </Text>
+                </Box>
               )}
               <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
                 {tamboresDisponibles.map(tambor => {
@@ -208,8 +223,13 @@ const AgregarMuestra = () => {
              
               {/* Sección de tambores ya asignados */}
               {tamboresEnOtrosPools.length > 0 && (
-                <Box mt={6} p={4} bg="red.50" rounded="md" borderWidth={1} borderColor="red.200">
-                  <Text fontWeight="bold" color="red.700" mb={2}>Tambores ya asignados a otros pools:</Text>
+                <Box mt={6} p={4} bg="orange.50" rounded="md" borderWidth={1} borderColor="orange.200">
+                  <Text fontWeight="bold" color="orange.700" mb={2}>
+                    ⚠️ Tambores ya asignados a otros grupos ({tamboresEnOtrosPools.length})
+                  </Text>
+                  <Text fontSize="sm" color="orange.600" mb={3}>
+                    Estos tambores no están disponibles para seleccionar ya que pertenecen a otros grupos de análisis.
+                  </Text>
                   <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={3}>
                     {tamboresEnOtrosPools.map(tambor => {
                       const primerApiario = tambor.apiarios && tambor.apiarios.length > 0 ? tambor.apiarios[0] : null;
@@ -225,16 +245,16 @@ const AgregarMuestra = () => {
                         <Box
                           key={tambor.id}
                           borderWidth={1}
-                          borderColor="red.300"
+                          borderColor="orange.300"
                           bg="white"
                           borderRadius="md"
                           p={2}
-                          opacity={0.7}
+                          opacity={0.8}
                           cursor="not-allowed"
                         >
                           <HStack w="100%" justify="space-between">
-                            <Text fontWeight="bold" fontSize="md" color="red.600">#{tambor.num_registro}</Text>
-                            <Badge colorScheme="red" variant="outline">{tipo}</Badge>
+                            <Text fontWeight="bold" fontSize="md" color="orange.600">#{tambor.num_registro}</Text>
+                            <Badge colorScheme="orange" variant="outline">{tipo}</Badge>
                           </HStack>
                           <Text fontSize="xs" color="gray.600"><b>Apiario:</b> {nombresApiarios}</Text>
                           <Text fontSize="xs" color="gray.600"><b>Productor:</b> {apicultor}</Text>

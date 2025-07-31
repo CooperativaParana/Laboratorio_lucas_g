@@ -20,7 +20,7 @@ import {
   Container,
   Heading
 } from '@chakra-ui/react';
-import { ArrowBackIcon } from '@chakra-ui/icons';
+import { ArrowBackIcon, RepeatIcon } from '@chakra-ui/icons';
 import { useColorModeValue } from '@chakra-ui/react';
 import axios from 'axios';
 
@@ -41,11 +41,23 @@ const VerAnalisis = () => {
     cargarAnalisis();
   }, []);
 
+  // Recargar datos cuando el componente recibe el foco
+  useEffect(() => {
+    const handleFocus = () => {
+      cargarAnalisis();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
   const cargarAnalisis = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get(`${API_URL}/analisis-palinologicos/`);
+      // Agregar timestamp para evitar caché sin usar headers problemáticos
+      const timestamp = new Date().getTime();
+      const response = await axios.get(`${API_URL}/analisis-palinologicos/?_t=${timestamp}`);
       setAnalisis(response.data);
     } catch (err) {
       setError('Error al cargar los análisis: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
@@ -140,7 +152,15 @@ const VerAnalisis = () => {
             <Heading size="lg" textAlign="center">
               Análisis Palinológicos - Vista Pivoteada
             </Heading>
-            <Box w="100px"></Box>
+            <Button 
+              leftIcon={<RepeatIcon />} 
+              onClick={cargarAnalisis} 
+              colorScheme="blue" 
+              variant="outline"
+              isLoading={loading}
+            >
+              Recargar
+            </Button>
           </Flex>
 
           {error && (
