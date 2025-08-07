@@ -105,12 +105,36 @@ class TamborViewSet(viewsets.ModelViewSet):
     serializer_class = TamborWithApiariosSerializer
     permission_classes = [permissions.AllowAny]
 
+    def get_queryset(self):
+        queryset = MuestraTambor.objects.all()
+        # Filtrar por tambores disponibles si se especifica el parámetro
+        disponibles = self.request.query_params.get('disponibles', None)
+        if disponibles == 'true':
+            queryset = queryset.filter(estado_analisis_palinologico=False)
+        return queryset
+
     @action(detail=True, methods=['get'])
     def muestras(self, request, pk=None):
         tambor = self.get_object()
         muestras = Pool.objects.filter(tambores=tambor)
         serializer = PoolSerializer(muestras, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['patch'])
+    def liberar(self, request, pk=None):
+        """Liberar un tambor para que esté disponible nuevamente"""
+        tambor = self.get_object()
+        tambor.estado_analisis_palinologico = False
+        tambor.save()
+        serializer = self.get_serializer(tambor)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['patch'])
+    def liberar_multiple(self, request):
+        """Liberar múltiples tambores a la vez"""
+        tambor_ids = request.data.get('tambor_ids', [])
+        MuestraTambor.objects.filter(id__in=tambor_ids).update(estado_analisis_palinologico=False)
+        return Response({'message': f'{len(tambor_ids)} tambores liberados exitosamente'})
 
 class EspecieViewSet(viewsets.ModelViewSet):
     queryset = Especie.objects.all()

@@ -180,7 +180,7 @@ const VerAnalisis = () => {
                 <Table variant="simple" size="sm" borderWidth={1} borderColor={borderColor}>
                   <Thead position="sticky" top={0} bg={headerBg} zIndex={1}>
                     <Tr>
-                      <Th borderWidth={1} borderColor={borderColor} minW="120px">Pool ID</Th>
+                      <Th borderWidth={1} borderColor={borderColor} minW="120px">GPO ID</Th>
                       <Th borderWidth={1} borderColor={borderColor} minW="100px">Fecha Análisis</Th>
                       {especies.map(especie => (
                         <Th 
@@ -252,7 +252,7 @@ const VerAnalisis = () => {
 
           <Flex justify="space-between" align="center" mt={4}>
             <Text fontSize="sm" color="gray.600">
-              Total de pools: {pools.length}
+              Total de GPO: {pools.length}
             </Text>
             <Text fontSize="sm" color="gray.600">
               Total de especies: {especies.length}

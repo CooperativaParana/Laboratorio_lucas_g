@@ -5,6 +5,10 @@ from modelos.models.Apiario_model import Apiario
 class MuestraTambor(models.Model):
     """Modelo para los tambores de miel"""
     num_registro = models.CharField(max_length=50, unique=True)
+    estado_analisis_palinologico = models.BooleanField(
+        default=False, 
+        help_text="True si el tambor está asignado a un grupo de análisis, False si está disponible"
+    )
     fecha_de_extraccion = models.DateField(null=True, blank=True)
     apiarios = models.ManyToManyField(
         Apiario, 
