@@ -3,10 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from django.db.models import Count, Avg, Sum
+from django.db.models import Count, Avg, Sum, Q
 from django.db.models.functions import TruncMonth, TruncYear
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
+import json
 
 from .models.Analista_model import Analista
 from .models.Apiario_model import Apiario
@@ -322,3 +323,11 @@ class TamborApiarioViewSet(viewsets.ModelViewSet):
     def apiario(self, request, pk=None):
         tambor_apiario = self.get_object()
         serializer = ApiarioSerializer(tambor_apiario.apiario)
+
+def pool_stats(request, pool_id):
+    """
+    Obtiene estadísticas de un pool específico para visualizaciones
+    Retorna datos para: gráfico de torta, barras y scatter plot
+    """
+    from .services import get_pool_stats_response
+    return get_pool_stats_response(pool_id)
