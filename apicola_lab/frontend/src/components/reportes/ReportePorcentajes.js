@@ -168,35 +168,40 @@ const ReportePorcentajes = () => {
     });
   };
 
-  // Calcular porcentajes por especie para el pool seleccionado
+  // Calcular porcentajes por especie para el pool seleccionado (excluyendo especies con marca especial)
   const calcularPorcentajesPool = useMemo(() => {
     if (!poolAnalisis.length) return [];
 
     const especiesMap = new Map();
     let totalGranos = 0;
 
-    poolAnalisis.forEach(item => {
-      if (item.especie && item.cantidad_granos) {
-        const especieId = item.especie.id;
-        const cantidad = item.cantidad_granos;
-        
-        if (!especiesMap.has(especieId)) {
-          especiesMap.set(especieId, {
-            id: especieId,
-            nombre_cientifico: item.especie.nombre_cientifico || 'N/A',
-            nombre_comun: item.especie.nombre_comun || 'N/A',
-            familia: item.especie.familia || 'N/A',
-            cantidad_granos: 0,
-            porcentaje: 0
-          });
-        }
-        
-        especiesMap.get(especieId).cantidad_granos += cantidad;
-        totalGranos += cantidad;
+    // Filtrar solo especies sin marca especial (estas son las que aportan a la miel)
+    const especiesValidas = poolAnalisis.filter(item => 
+      item.especie && 
+      item.cantidad_granos && 
+      (!item.marca_especial || item.marca_especial === '')
+    );
+
+    especiesValidas.forEach(item => {
+      const especieId = item.especie.id;
+      const cantidad = item.cantidad_granos;
+      
+      if (!especiesMap.has(especieId)) {
+        especiesMap.set(especieId, {
+          id: especieId,
+          nombre_cientifico: item.especie.nombre_cientifico || 'N/A',
+          nombre_comun: item.especie.nombre_comun || 'N/A',
+          familia: item.especie.familia || 'N/A',
+          cantidad_granos: 0,
+          porcentaje: 0
+        });
       }
+      
+      especiesMap.get(especieId).cantidad_granos += cantidad;
+      totalGranos += cantidad;
     });
 
-    // Calcular porcentajes
+    // Calcular porcentajes solo de especies válidas
     especiesMap.forEach(especie => {
       especie.porcentaje = totalGranos > 0 ? (especie.cantidad_granos / totalGranos) * 100 : 0;
     });
@@ -204,6 +209,30 @@ const ReportePorcentajes = () => {
     return Array.from(especiesMap.values())
       .sort((a, b) => b.porcentaje - a.porcentaje);
   }, [poolAnalisis]);
+
+  // Determinar si es monofloral o multifloral
+  const determinarTipoFloral = useMemo(() => {
+    if (!calcularPorcentajesPool.length) return { tipo: 'N/A', descripcion: 'Sin datos suficientes' };
+    
+    const especieDominante = calcularPorcentajesPool[0];
+    const porcentajeDominante = especieDominante.porcentaje;
+    
+    if (porcentajeDominante > 45) {
+      return {
+        tipo: 'MONOFLORAL',
+        descripcion: `Miel monofloral de ${especieDominante.nombre_cientifico} (${porcentajeDominante.toFixed(1)}%)`,
+        especieDominante: especieDominante.nombre_cientifico,
+        porcentaje: porcentajeDominante
+      };
+    } else {
+      return {
+        tipo: 'MULTIFLORAL',
+        descripcion: `Miel multifloral - Especie dominante: ${especieDominante.nombre_cientifico} (${porcentajeDominante.toFixed(1)}%)`,
+        especieDominante: especieDominante.nombre_cientifico,
+        porcentaje: porcentajeDominante
+      };
+    }
+  }, [calcularPorcentajesPool]);
 
   if (loading) {
     return (
@@ -233,7 +262,7 @@ const ReportePorcentajes = () => {
                 </Button>
                 <VStack spacing={1}>
                   <Heading size="lg" textAlign="center">
-                    Estudios Melispalinológicos
+                    Estudios Melisopalinológicos
                   </Heading>
                   <Text fontSize="sm" opacity={0.9}>
                     {new Date().toLocaleDateString('es-ES', { 
@@ -283,7 +312,7 @@ const ReportePorcentajes = () => {
 
             {pools.length === 0 ? (
               <Text textAlign="center" color="gray.500" fontSize="lg" flexShrink={0}>
-                No hay estudios melispalinológicos disponibles.
+                No hay estudios melisopalinológicos disponibles.
               </Text>
             ) : (
               <Box 
@@ -395,7 +424,7 @@ const ReportePorcentajes = () => {
               </Button>
               <VStack spacing={1} order={{ base: 2, md: 2 }}>
                 <Heading size={{ base: "md", md: "lg" }} textAlign="center">
-                  Reporte Melispalinológico
+                  Reporte Melisopalinológico
                 </Heading>
                 <Text fontSize={{ base: "xs", md: "sm" }} opacity={0.9} textAlign="center">
                   Estudio ID: {selectedPool?.id} - {new Date().toLocaleDateString('es-ES', { 
@@ -485,17 +514,51 @@ const ReportePorcentajes = () => {
                     </Text>
                   </VStack>
                 </GridItem>
+                <GridItem colSpan={{ base: 1, md: 2, lg: 2 }}>
+                  <VStack align="start" spacing={1}>
+                    <Text fontSize="sm" fontWeight="bold" color="gray.600">
+                      Tipo de Miel:
+                    </Text>
+                    <Badge 
+                      colorScheme={determinarTipoFloral.tipo === 'MONOFLORAL' ? 'green' : 'orange'} 
+                      fontSize="md" 
+                      px={3} 
+                      py={1}
+                    >
+                      {determinarTipoFloral.tipo}
+                    </Badge>
+                    <Text fontSize="sm" color="gray.600" mt={1}>
+                      {determinarTipoFloral.descripcion}
+                    </Text>
+                  </VStack>
+                </GridItem>
               </Grid>
             </CardBody>
           </Card>
 
           {/* Tabla de Especies */}
-          <Card bg={cardBg} borderWidth={1} borderColor={borderColor} flex={1}>
-            <CardHeader>
-              <Heading size="md" color="blue.700">
-                Análisis de Especies Botánicas
-              </Heading>
-            </CardHeader>
+                      <Card bg={cardBg} borderWidth={1} borderColor={borderColor} flex={1}>
+              <CardHeader>
+                <VStack align="center" spacing={2}>
+                  <Heading size="md" color="blue.700" textAlign="center">
+                    Análisis de Especies Botánicas
+                  </Heading>
+                  <VStack align="center" spacing={1}>
+                    <Text fontSize="sm" color="gray.600" textAlign="center">
+                      <Badge colorScheme="blue" variant="subtle" mr={2}>
+                        ⚠️ Filtrado
+                      </Badge>
+                      Solo se muestran especies sin marca especial (aportan a la miel)
+                    </Text>
+                    <Text fontSize="xs" color="gray.500" textAlign="center">
+                      <Badge colorScheme="purple" variant="subtle" mr={2}>
+                        📊 Criterio
+                      </Badge>
+                      Monofloral: {'>'}45% de una especie | Multifloral: ≤45% de todas las especies
+                    </Text>
+                  </VStack>
+                </VStack>
+              </CardHeader>
             <CardBody>
               {calcularPorcentajesPool.length === 0 ? (
                 <Text textAlign="center" color="gray.500" fontSize="lg">
@@ -564,15 +627,18 @@ const ReportePorcentajes = () => {
           {/* Resumen y Totales */}
           <Card bg={cardBg} borderWidth={1} borderColor={borderColor}>
             <CardBody>
-              <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" }} gap={{ base: 3, md: 4 }}>
+              <Grid templateColumns={{ base: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" }} gap={{ base: 3, md: 4 }}>
                 <GridItem>
                   <VStack align="center" spacing={1}>
                     <Text fontSize="sm" fontWeight="bold" color="gray.600">
-                      Total de Especies
+                      Especies Válidas
                     </Text>
                     <Badge colorScheme="green" fontSize="lg" px={3} py={1}>
                       {calcularPorcentajesPool.length}
                     </Badge>
+                    <Text fontSize="xs" color="gray.500" textAlign="center">
+                      Sin marca especial
+                    </Text>
                   </VStack>
                 </GridItem>
                 <GridItem>
@@ -597,6 +663,21 @@ const ReportePorcentajes = () => {
                       py={1}
                     >
                       {calcularPorcentajesPool.reduce((sum, especie) => sum + especie.porcentaje, 0).toFixed(1)}%
+                    </Badge>
+                  </VStack>
+                </GridItem>
+                <GridItem>
+                  <VStack align="center" spacing={1}>
+                    <Text fontSize="sm" fontWeight="bold" color="gray.600">
+                      Tipo de Miel
+                    </Text>
+                    <Badge 
+                      colorScheme={determinarTipoFloral.tipo === 'MONOFLORAL' ? 'green' : 'orange'} 
+                      fontSize="md" 
+                      px={2} 
+                      py={1}
+                    >
+                      {determinarTipoFloral.tipo}
                     </Badge>
                   </VStack>
                 </GridItem>
