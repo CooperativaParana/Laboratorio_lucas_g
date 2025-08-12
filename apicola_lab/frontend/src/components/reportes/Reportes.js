@@ -64,13 +64,13 @@ const Reportes = () => {
   }
 
   return (
-    <VStack spacing={8} align="center" mt={8} mb={8}>
+    <VStack spacing={8} align="center" mt={8} mb={8} bg="transparent">
       <Heading as="h1" size="xl" mb={4}>
         Reportes Palinológicos
       </Heading>
       
       {/* Estadísticas de Análisis Palinológicos */}
-      <Box w={{ base: '95%', md: '70%' }} p={6} boxShadow="lg" borderRadius="lg" bg="white">
+      <Box w={{ base: '95%', md: '70%' }} p={6} boxShadow="lg" borderRadius="lg" bg="white" className="honeycomb-glow">
         <Heading as="h2" size="md" mb={4}>Estadísticas de Análisis Palinológicos</Heading>
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
           <Stat>
@@ -85,7 +85,7 @@ const Reportes = () => {
       </Box>
 
       {/* Muestras por mes */}
-      <Box w={{ base: '95%', md: '70%' }} p={6} boxShadow="lg" borderRadius="lg" bg="white">
+      <Box w={{ base: '95%', md: '70%' }} p={6} boxShadow="lg" borderRadius="lg" bg="white" className="honeycomb-glow">
         <Heading as="h2" size="md" mb={4}>Muestras Analizadas por Mes</Heading>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
           {data.muestras_por_mes.map((item, idx) => (
@@ -98,7 +98,7 @@ const Reportes = () => {
       </Box>
 
       {/* Top 10 Especies Analizadas */}
-      <Box w={{ base: '95%', md: '70%' }} p={6} boxShadow="lg" borderRadius="lg" bg="white">
+      <Box w={{ base: '95%', md: '70%' }} p={6} boxShadow="lg" borderRadius="lg" bg="white" className="honeycomb-glow">
         <Heading as="h2" size="md" mb={4}>Top 10 Especies de Polen Encontradas</Heading>
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
           {data.analisis_por_especie.map((item, idx) => (
@@ -112,7 +112,7 @@ const Reportes = () => {
       </Box>
 
       {/* Estadísticas Generales */}
-      <Box w={{ base: '95%', md: '70%' }} p={6} boxShadow="lg" borderRadius="lg" bg="white">
+      <Box w={{ base: '95%', md: '70%' }} p={6} boxShadow="lg" borderRadius="lg" bg="white" className="honeycomb-glow">
         <Heading as="h2" size="md" mb={4}>Estadísticas Generales del Sistema</Heading>
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
           <Stat>
