@@ -5,7 +5,7 @@ from .views import (
     TamborViewSet, EspecieViewSet, MuestraViewSet,
     AnalisisPalinologicoViewSet, AnalisisFisicoQuimicoViewSet,
     EstadisticasView, ContienePoolViewSet, TamborApiarioViewSet,
-    pool_stats
+    PoolViewSet, pool_stats
 )
 
 router = DefaultRouter()
@@ -17,6 +17,7 @@ router.register(r'especies', EspecieViewSet)
 router.register(r'muestras', MuestraViewSet)
 router.register(r'analisis-palinologicos', AnalisisPalinologicoViewSet)
 router.register(r'analisis-fisicoquimicos', AnalisisFisicoQuimicoViewSet)
+router.register(r'pools', PoolViewSet)
 router.register(r'contiene-pool', ContienePoolViewSet)
 router.register(r'tambor-apiario', TamborApiarioViewSet)
 

@@ -324,6 +324,21 @@ class TamborApiarioViewSet(viewsets.ModelViewSet):
         tambor_apiario = self.get_object()
         serializer = ApiarioSerializer(tambor_apiario.apiario)
 
+class PoolViewSet(viewsets.ModelViewSet):
+    queryset = Pool.objects.all()
+    serializer_class = PoolSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        queryset = Pool.objects.select_related('analista').all()
+        return queryset
+
+    @action(detail=True, methods=['get'])
+    def estadisticas(self, request, pk=None):
+        """Obtener estadísticas de un pool específico"""
+        from .services import get_pool_stats_response
+        return get_pool_stats_response(pk)
+
 def pool_stats(request, pool_id):
     """
     Obtiene estadísticas de un pool específico para visualizaciones

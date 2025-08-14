@@ -27,6 +27,8 @@ const ListaPools = () => {
   const [pools, setPools] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  const API_URL = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     fetchPools();
@@ -35,7 +37,7 @@ const ListaPools = () => {
   const fetchPools = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/pools/');
+      const response = await fetch(`${API_URL}/pools/`);
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -51,7 +53,7 @@ const ListaPools = () => {
   };
 
   const handleVerGraficos = (poolId) => {
-    navigate(`/graficas-pool/${poolId}`);
+    navigate(`/graficas-consultas/${poolId}`);
   };
 
   const handleVolver = () => {

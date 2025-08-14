@@ -29,6 +29,9 @@ class PoolStatsService:
                 pool=pool
             ).select_related('especie').order_by('especie__nombre_cientifico')
             
+            print(f"Pool {pool_id} encontrado: {pool}")
+            print(f"Análisis encontrados: {analisis.count()}")
+            
             if not analisis.exists():
                 return {
                     'error': 'No hay análisis palinológicos para este pool',
@@ -60,6 +63,10 @@ class PoolStatsService:
                 'status': 404
             }
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Error en PoolStatsService: {str(e)}")
+            print(f"Traceback: {error_details}")
             return {
                 'error': f'Error al procesar la solicitud: {str(e)}',
                 'status': 500
@@ -95,11 +102,14 @@ class PoolStatsService:
     @staticmethod
     def _prepare_bar_chart_data(pie_chart_data):
         """Prepara datos para gráfico de barras"""
+        # pie_chart_data es la estructura completa, necesitamos detailed_data
+        detailed_data = pie_chart_data.get('detailed_data', [])
+        
         return {
-            'labels': [item['especie'] for item in pie_chart_data],
+            'labels': [item['especie'] for item in detailed_data],
             'datasets': [{
                 'label': 'Cantidad de Granos',
-                'data': [item['cantidad'] for item in pie_chart_data],
+                'data': [item['cantidad'] for item in detailed_data],
                 'backgroundColor': 'rgba(54, 162, 235, 0.8)',
                 'borderColor': 'rgba(54, 162, 235, 1)',
                 'borderWidth': 1
