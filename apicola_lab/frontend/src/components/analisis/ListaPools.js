@@ -70,7 +70,7 @@ const ListaPools = () => {
       <Flex minH="100vh" align="center" justify="center" bg="transparent">
         <VStack spacing={4}>
           <Spinner size="xl" color="blue.500" />
-          <Text>Cargando pools...</Text>
+          <Text>Cargando GPOs...</Text>
         </VStack>
       </Flex>
     );
@@ -82,7 +82,7 @@ const ListaPools = () => {
         <Alert status="error" maxW="600px">
           <AlertIcon />
           <VStack align="start" spacing={2}>
-            <Text fontWeight="bold">Error al cargar los pools</Text>
+            <Text fontWeight="bold">Error al cargar los GPO</Text>
             <Text>{error}</Text>
             <Button onClick={handleVolver} colorScheme="blue" size="sm">
               Volver
@@ -100,10 +100,10 @@ const ListaPools = () => {
         <Box bg="white" p={6} rounded="lg" boxShadow="lg" mb={6} className="honeycomb-glow">
           <VStack spacing={4} align="center">
             <Text as="h1" fontSize="3xl" fontWeight="bold">
-              Lista de Pools
+              Lista de GPOs
             </Text>
             <Text fontSize="lg" color="gray.600" textAlign="center">
-              Visualiza y analiza los datos de todos los pools de análisis palinológico
+              Visualiza y analiza los datos de todos los GPOs de análisis palinológico
             </Text>
             <Button onClick={handleVolver} colorScheme="gray" size="lg">
               Volver al Análisis Palinológico
@@ -115,7 +115,7 @@ const ListaPools = () => {
         <Box bg="white" rounded="lg" boxShadow="lg" overflow="hidden" className="honeycomb-glow">
           <Box p={6}>
             <Text fontSize="xl" fontWeight="bold" mb={4}>
-              Pools Disponibles ({pools.length})
+              GPOs Disponibles ({pools.length})
             </Text>
           </Box>
           
@@ -167,7 +167,7 @@ const ListaPools = () => {
           
           {pools.length === 0 && (
             <Box p={8} textAlign="center">
-              <Text color="gray.500">No hay pools disponibles</Text>
+              <Text color="gray.500">No hay GPOs disponibles</Text>
             </Box>
           )}
         </Box>

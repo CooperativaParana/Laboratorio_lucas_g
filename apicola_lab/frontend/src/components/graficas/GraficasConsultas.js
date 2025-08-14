@@ -47,7 +47,7 @@ const GraficasConsultas = () => {
       <Flex minH="100vh" align="center" justify="center" bg="transparent">
         <VStack spacing={4}>
           <Spinner size="xl" color="blue.500" />
-          <Text>Cargando estadísticas del pool...</Text>
+          <Text>Cargando estadísticas del GPO...</Text>
         </VStack>
       </Flex>
     );
@@ -212,7 +212,7 @@ const GraficasConsultas = () => {
         <Box bg="white" p={6} rounded="lg" boxShadow="lg" mb={6} className="honeycomb-glow">
           <VStack spacing={4} align="center">
             <Text as="h1" fontSize="3xl" fontWeight="bold">
-              Gráficos del Pool {pool_info.num_registro}
+              Gráficos del GPO {pool_info.num_registro}
             </Text>
             <HStack spacing={8} fontSize="md" color="gray.600">
               <Text><strong>Analista:</strong> {pool_info.analista}</Text>
