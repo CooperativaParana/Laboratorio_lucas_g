@@ -18,7 +18,7 @@ const AnalisisPalinologico = () => {
   };
 
   const handleGraficasConsultas = () => {
-    navigate('/lista-pools');
+    navigate('/graficas-consultas');
   };
 
   const handleVolver = () => {

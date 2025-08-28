@@ -34,6 +34,7 @@ function App() {
           <Route path="/reportes/:tipo" element={<Reportes />} />
           <Route path="/reportes-fisicoquimico/:tipo" element={<ReportesFisicoquimico />} />
           <Route path="/lista-pools" element={<ListaPools />} />
+          <Route path="/graficas-consultas" element={<GraficasConsultas />} />
           <Route path="/graficas-consultas/:poolId" element={<GraficasConsultas />} />
           <Route path="/contador-polen/:id" element={<ContadorPolen />} />
           <Route path="/muestras" element={<ListaMuestras />} />
