@@ -21,54 +21,81 @@ Puedes optar por una variante más simple en EC2 (sin ECS). Abajo incluyo ambas.
 
 ---
 
-### 1) Variables de entorno (lista sugerida)
+### 1) Variables de entorno (lista sugerida para tu proyecto)
 
-- DJANGO_SECRET_KEY
-- DJANGO_DEBUG=false
-- DJANGO_ALLOWED_HOSTS="api.midominio.com,alb-dns.amazonaws.com"
-- DJANGO_CORS_ALLOWED_ORIGINS="https://midominio.com,https://dxxxxx.cloudfront.net"
-- DJANGO_CSRF_TRUSTED_ORIGINS="https://midominio.com,https://dxxxxx.cloudfront.net,https://api.midominio.com"
-- DATABASE_URL o variables separadas:
-  - POSTGRES_DB
-  - POSTGRES_USER
-  - POSTGRES_PASSWORD
-  - POSTGRES_HOST
-  - POSTGRES_PORT=5432
-- AWS_STORAGE_BUCKET_NAME_STATIC (p.ej. coadelpa-static)
-- AWS_STORAGE_BUCKET_NAME_MEDIA (p.ej. coadelpa-media)
-- AWS_S3_REGION_NAME (p.ej. us-east-1)
-- DJANGO_ALLOWED_CIDR (opcional para internal use)
+**Variables Django (reemplazar las hardcodeadas):**
+- `DJANGO_SECRET_KEY` (reemplaza "django-insecure-5%h=0dw$7jdp)qw5k$r=0mqzg$)+w^q182x$jv#*45^x&h%1ml")
+- `DJANGO_DEBUG=false` (en producción)
+- `DJANGO_ALLOWED_HOSTS="api.midominio.com,alb-dns.amazonaws.com"`
+- `DJANGO_CORS_ALLOW_ALL_ORIGINS=false` (en producción)
+- `DJANGO_CORS_ALLOWED_ORIGINS="https://midominio.com,https://dxxxxx.cloudfront.net"`
+- `DJANGO_CSRF_TRUSTED_ORIGINS="https://midominio.com,https://dxxxxx.cloudfront.net,https://api.midominio.com"`
+
+**Base de datos (ya tienes estas en tu settings.py):**
+- `DB_NAME` (ya configurado)
+- `DB_USER` (ya configurado)
+- `DB_PASSWORD` (ya configurado)
+- `DB_HOST` (ya configurado, cambiar a RDS en producción)
+- `DB_PORT=5432` (ya configurado)
+
+**S3 (nuevas para tu proyecto):**
+- `USE_S3=true` (activar S3)
+- `AWS_STORAGE_BUCKET_NAME_STATIC` (p.ej. coadelpa-static)
+- `AWS_STORAGE_BUCKET_NAME_MEDIA` (p.ej. coadelpa-media)
+- `AWS_S3_REGION_NAME` (p.ej. us-east-1)
 
 Guárdalas en SSM Parameter Store (SecureString) o Secrets Manager. Evita `.env` en producción.
 
 ---
 
-### 2) Cambios en Django `settings.py`
+### 2) Cambios en Django `settings.py` (específicos para tu proyecto)
 
-Instala dependencias (si no están):
+**Tu proyecto YA tiene:**
+- ✅ Django 4.2.7 + DRF + JWT + CORS
+- ✅ PostgreSQL configurado con variables de entorno
+- ✅ Gunicorn en requirements.txt
+- ✅ CORS configurado (pero muy permisivo para desarrollo)
 
+**Necesitas instalar:**
 ```bash
-pip install django-cors-headers django-storages[boto3] psycopg2-binary
+pip install django-storages[boto3]
 ```
 
-Ejemplo de ajustes clave:
+**Añadir a requirements.txt:**
+```txt
+django-storages[boto3]==1.14.2
+```
+
+**Cambios específicos para tu `settings.py`:**
 
 ```python
-# settings.py (extracto)
+# settings.py (extracto - reemplaza las secciones existentes)
 import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "CHANGE_ME")
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-5%h=0dw$7jdp)qw5k$r=0mqzg$)+w^q182x$jv#*45^x&h%1ml")
 
-ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "").split(",") if h.strip()]
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
+
+ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()]
 
 INSTALLED_APPS = [
-    # ...
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "modelos",
+    # REST Framework
+    "rest_framework",
     "corsheaders",
-    "storages",
+    "drf_spectacular",
+    "storages",  # AÑADIR ESTA LÍNEA
 ]
 
 MIDDLEWARE = [
@@ -76,28 +103,32 @@ MIDDLEWARE = [
     # ... el resto de middlewares
 ]
 
-# CORS / CSRF
-CORS_ALLOWED_ORIGINS = [o.strip() for o in os.getenv("DJANGO_CORS_ALLOWED_ORIGINS", "").split(",") if o.strip()]
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()]
+# CORS / CSRF (reemplaza tu configuración actual)
+CORS_ALLOW_ALL_ORIGINS = os.getenv("DJANGO_CORS_ALLOW_ALL_ORIGINS", "False").lower() == "true"
+CORS_ALLOWED_ORIGINS = [o.strip() for o in os.getenv("DJANGO_CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",") if o.strip()]
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",") if o.strip()]
 
-# Base de datos (PostgreSQL RDS)
+# Base de datos (PostgreSQL RDS) - ajusta tu configuración actual
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB"),
-        "USER": os.getenv("POSTGRES_USER"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
-        "HOST": os.getenv("POSTGRES_HOST"),
-        "PORT": os.getenv("POSTGRES_PORT", "5432"),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'apicola_lab_db'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', '123456lol'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+        'OPTIONS': {
+            'client_encoding': 'UTF8',
+        },
     }
 }
 
-# Estáticos locales (para collectstatic)
+# Estáticos y Media (reemplaza tu configuración actual)
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# S3 (django-storages)
-USE_S3 = os.getenv("USE_S3", "true").lower() == "true"
+# S3 (django-storages) - AÑADIR DESPUÉS de STATIC_ROOT
+USE_S3 = os.getenv("USE_S3", "false").lower() == "true"
 if USE_S3:
     AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "us-east-1")
     AWS_DEFAULT_ACL = None
@@ -109,18 +140,60 @@ if USE_S3:
     STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 
-    # Opcionalmente separa estáticos y media con storages custom
-    # STATICFILES_STORAGE = "project.storage_backends.StaticStorage"
-    # DEFAULT_FILE_STORAGE = "project.storage_backends.MediaStorage"
-
     STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME_STATIC}.s3.amazonaws.com/"
     MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME_MEDIA}.s3.amazonaws.com/"
 else:
     MEDIA_URL = "/media/"
-    MEDIA_ROOT = BASE_DIR / "media"
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 ```
 
 Si quieres buckets separados para estáticos y media con paths distintos, crea `storage_backends.py` y define dos clases con `location = "static"` y `location = "media"`.
+
+---
+
+### 2.1) Ajustar Dockerfile.backend para producción
+
+**Tu Dockerfile actual usa `runserver` (desarrollo). Para producción necesitas:**
+
+```dockerfile
+# Cambiar la última línea de:
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+# Por:
+CMD ["gunicorn", "apicola_lab.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "60"]
+```
+
+**O crear un Dockerfile.production separado:**
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar dependencias base primero
+RUN pip install --no-cache-dir setuptools==68.0.0 wheel==0.40.0
+
+# Copiar requirements.txt
+COPY backend/requirements.txt .
+
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar el código de la aplicación
+COPY backend/ /app/
+
+# Exponer el puerto
+EXPOSE 8000
+
+# Comando para PRODUCCIÓN
+CMD ["gunicorn", "apicola_lab.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "60"]
+```
 
 ---
 
@@ -289,10 +362,46 @@ Nota: Para `amazon-ecs-deploy-task-definition@v2` necesitas un `taskdef.json`. P
 
 ### 9) Health checks y hardening
 
-- Añade endpoint `/health/` simple en Django para el ALB.
-- `SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")` cuando usas ALB.
-- Activa `SECURE_HSTS_SECONDS`, `SECURE_SSL_REDIRECT` en producción.
-- Revisa CORS/CSRF para permitir únicamente dominios finales.
+**Añade endpoint `/health/` simple en Django para el ALB:**
+
+Crea `apicola_lab/backend/modelos/views.py` (si no existe) o añade a tu archivo de vistas:
+
+```python
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def health_check(request):
+    return JsonResponse({"status": "healthy", "service": "apicola_lab"})
+```
+
+Añade la URL en `apicola_lab/backend/apicola_lab/urls.py`:
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+from modelos.views import health_check
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('modelos.urls')),
+    path('health/', health_check, name='health_check'),  # AÑADIR ESTA LÍNEA
+]
+```
+
+**Configuración de seguridad para producción:**
+```python
+# Añadir a settings.py cuando uses ALB
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Activar en producción
+SECURE_HSTS_SECONDS = 31536000  # 1 año
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Revisa CORS/CSRF para permitir únicamente dominios finales
+```
 
 ---
 
@@ -324,6 +433,36 @@ Nota: Para `amazon-ecs-deploy-task-definition@v2` necesitas un `taskdef.json`. P
 - [ ] Migraciones ejecutadas, `collectstatic` hecho
 - [ ] CloudFront sirve el frontend y consume la API
 - [ ] CI/CD funcionando para backend y frontend
+
+---
+
+## Resumen de archivos creados/modificados para tu proyecto
+
+### ✅ **Archivos CREADOS:**
+- `apicola_lab/Dockerfile.production` - Dockerfile optimizado para producción
+- `apicola_lab/backend/storage_backends.py` - Configuración de S3 para estáticos/media
+- `apicola_lab/.aws/taskdef.json` - Ejemplo de Task Definition para ECS
+- `apicola_lab/backend/env.example` - Variables de entorno de ejemplo
+
+### 🔧 **Archivos MODIFICADOS:**
+- `apicola_lab/backend/modelos/views.py` - Añadido endpoint `/health/`
+- `apicola_lab/backend/apicola_lab/urls.py` - Añadida ruta del health check
+- `apicola_lab/backend/requirements.txt` - Añadido `django-storages[boto3]`
+
+### 📝 **Próximos pasos:**
+1. **Local**: Instalar `django-storages[boto3]` y probar la app
+2. **AWS**: Crear recursos (RDS, S3, ECR, ECS, ALB, CloudFront)
+3. **Configurar**: Variables en SSM Parameter Store
+4. **Desplegar**: Usar los workflows de GitHub Actions incluidos
+5. **Verificar**: Health check en `/health/` y logs en CloudWatch
+
+### 🚀 **Comando para probar localmente:**
+```bash
+cd apicola_lab/backend
+pip install django-storages[boto3]
+python manage.py runserver
+# Visitar http://localhost:8000/health/
+```
 
 ---
 

@@ -26,10 +26,14 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from modelos.views import health_check
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    
+    # Health check para AWS ALB
+    path('health/', health_check, name='health_check'),
     
     # JWT Authentication
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

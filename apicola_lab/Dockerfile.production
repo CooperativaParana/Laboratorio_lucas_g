@@ -1,0 +1,31 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar dependencias base primero
+RUN pip install --no-cache-dir setuptools==68.0.0 wheel==0.40.0
+
+# Copiar requirements.txt
+COPY backend/requirements.txt .
+
+# Instalar dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar el código de la aplicación
+COPY backend/ /app/
+
+# Crear directorio para archivos estáticos
+RUN mkdir -p /app/static /app/media
+
+# Exponer el puerto
+EXPOSE 8000
+
+# Comando para PRODUCCIÓN con Gunicorn
+CMD ["gunicorn", "apicola_lab.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-"]

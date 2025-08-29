@@ -346,3 +346,17 @@ def pool_stats(request, pool_id):
     """
     from .services import get_pool_stats_response
     return get_pool_stats_response(pool_id)
+
+
+# Health check endpoint para AWS ALB
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def health_check(request):
+    """Endpoint de health check para AWS Application Load Balancer"""
+    return JsonResponse({
+        "status": "healthy", 
+        "service": "apicola_lab",
+        "timestamp": timezone.now().isoformat()
+    })
