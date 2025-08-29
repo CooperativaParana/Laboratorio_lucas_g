@@ -33,5 +33,5 @@ django-extensions==3.2.3
 # API Documentation
 drf-spectacular==0.26.5
 
-# S3 Storage
-django-storages[boto3]==1.14.2
+# S3 Storage (opcional para free tier)
+# django-storages[boto3]==1.14.2

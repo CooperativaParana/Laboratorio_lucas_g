@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar el código de la aplicación
 COPY backend/ /app/
 
-# Crear directorio para archivos estáticos
+# Crear directorio para archivos estáticos (free tier)
 RUN mkdir -p /app/static /app/media
 
 # Exponer el puerto
