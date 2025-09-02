@@ -61,7 +61,7 @@ Master password: [CREAR CONTRASEÑA SEGURA]
 ### **1.4 Configuración de red:**
 ```
 VPC: Default VPC
-Public access: Yes (para free tier)
+Public access: No
 VPC security group: Create new
 Security group name: coadelpa-db-sg
 ```
@@ -211,6 +211,70 @@ docker-compose up -d --build
 
 ---
 
+## 🗂️ **Paso 4-FE: Desplegar frontend (React) en S3**
+
+### **4-FE.1 Construir el frontend:**
+```bash
+cd apicola_lab/frontend
+
+# Configurar la URL del backend ANTES del build
+# Ejemplo (Windows PowerShell)
+$env:REACT_APP_API_URL="http://TU_IP_EC2:8000"
+
+# En Linux/Mac: export REACT_APP_API_URL=http://TU_IP_EC2:8000
+
+npm ci
+npm run build
+# Se genera la carpeta build/
+```
+
+### **4-FE.2 Crear bucket S3 para hosting estático:**
+- Ir a S3 → Create bucket
+- Bucket name: `coadelpa-frontend` (único globalmente)
+- Region: la misma de tu EC2/RDS si es posible
+- Desactivar “Block all public access” (necesario para hosting estático)
+- Crear bucket
+
+### **4-FE.3 Habilitar Static website hosting:**
+- En el bucket → Properties → Static website hosting → Enable
+- Index document: `index.html`
+- Error document: `index.html` (para SPA)
+- Guarda la “Bucket website endpoint” (URL pública del sitio)
+
+### **4-FE.4 Política pública de solo lectura (objetos):**
+- En el bucket → Permissions → Bucket policy → Pegar:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": [
+        "s3:GetObject"
+      ],
+      "Resource": "arn:aws:s3:::coadelpa-frontend/*"
+    }
+  ]
+}
+```
+Reemplaza `coadelpa-frontend` por el nombre real de tu bucket.
+
+### **4-FE.5 Subir el build al bucket:**
+```bash
+# Opción 1: Consola S3 → Upload → Arrastrar contenido de build/
+
+# Opción 2: AWS CLI (si lo tienes configurado)
+aws s3 sync build/ s3://coadelpa-frontend --delete
+```
+
+### **4-FE.6 Probar el sitio del frontend:**
+- Abre la “Bucket website endpoint” (ej: `http://coadelpa-frontend.s3-website-us-east-1.amazonaws.com`)
+- La app debe cargar y consumir `REACT_APP_API_URL` para hablar con el backend en EC2
+
+---
+
 ## 🌐 **Paso 5: Configurar dominio (opcional)**
 
 ### **5.1 Si tienes dominio:**
@@ -221,6 +285,39 @@ docker-compose up -d --build
 ### **5.2 Si NO tienes dominio:**
 - Usar directamente la IP de EC2
 - Ejemplo: `http://TU_IP_EC2:8000`
+
+---
+
+## 🔗 **Paso 5-FE: Conectar frontend con backend**
+
+### **5-FE.1 Variables en el frontend:**
+- Usa `REACT_APP_API_URL` apuntando a tu backend (EC2 o dominio):
+  - Ejemplo: `https://api.tu-dominio.com` o `http://TU_IP_EC2:8000`
+- Recuerda: en React (CRA) estas variables se inyectan en tiempo de build. Cambios requieren nuevo `npm run build` y re-subida a S3.
+
+### **5-FE.2 Configuración CORS/CSRF en Django:**
+- En `DJANGO_ALLOWED_HOSTS` incluye tu IP/dominio del backend
+- En `CSRF_TRUSTED_ORIGINS` y CORS permite el dominio del frontend (S3 o CloudFront)
+```python
+# settings.py (ejemplo)
+ALLOWED_HOSTS = ["TU_IP_EC2", "api.tu-dominio.com"]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://coadelpa-frontend.s3-website-us-east-1.amazonaws.com",
+    "https://tu-cloudfront-domain.cloudfront.net",
+    "https://www.tu-frontend.com",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://coadelpa-frontend.s3-website-us-east-1.amazonaws.com",
+    "https://tu-cloudfront-domain.cloudfront.net",
+    "https://www.tu-frontend.com",
+]
+
+# Si necesitas cookies/sesiones entre dominios
+CORS_ALLOW_CREDENTIALS = True
+```
+Reemplaza las URLs por las tuyas reales. Asegúrate de tener `django-cors-headers` instalado y añadido al middleware si aún no lo está.
 
 ---
 
@@ -244,6 +341,13 @@ docker-compose logs -f backend
 ```bash
 # Conectar a RDS desde EC2
 psql -h TU_ENDPOINT_RDS -U postgres -d apicola_lab_db
+```
+
+### **6.4 Probar desde el frontend:**
+```bash
+# Abre la URL de S3 (o CloudFront) del frontend
+# Navega a una vista que llame a la API
+# En la consola del navegador, verifica que las solicitudes vayan a REACT_APP_API_URL y respondan 200
 ```
 
 ---
@@ -310,6 +414,23 @@ db.t3.medium: 2 vCPU, 4 GB RAM (~$50/mes)
 
 ---
 
+## 🧊 (Opcional) **CloudFront delante de S3 para HTTPS y caché**
+
+### **CF.1 Crear distribución CloudFront:**
+- Origin: tu bucket S3 del frontend (mejor el “Static website endpoint”)
+- Viewer protocol policy: Redirect HTTP to HTTPS
+- Cache policy: CachingOptimized (por defecto)
+
+### **CF.2 Certificado SSL (si usas dominio propio):**
+- En ACM (us-east-1) crea/valida un certificado para tu dominio `www.tu-frontend.com`
+- Asócialo a la distribución
+
+### **CF.3 Actualiza tu app:**
+- Cambia los enlaces del frontend al dominio de CloudFront o tu dominio propio
+- Actualiza `CSRF_TRUSTED_ORIGINS` y `CORS_ALLOWED_ORIGINS` en el backend con el dominio de CloudFront o tu dominio
+
+---
+
 ## 📚 **Recursos adicionales:**
 
 ### **Documentación oficial:**
@@ -330,10 +451,11 @@ db.t3.medium: 2 vCPU, 4 GB RAM (~$50/mes)
 3. ✅ **Configurar Security Groups**
 4. ✅ **Conectar por SSH**
 5. ✅ **Instalar Docker + Docker Compose**
-6. ✅ **Desplegar tu app Django**
-7. ✅ **Configurar variables de entorno**
-8. ✅ **Verificar funcionamiento**
-9. ✅ **Configurar dominio (opcional)**
+6. ✅ **Desplegar backend (Django) en EC2**
+7. ✅ **Desplegar frontend (React) en S3**
+8. ✅ **Configurar variables de entorno**
+9. ✅ **Verificar funcionamiento (API y frontend)**
+10. ✅ **Configurar dominio/CloudFront (opcional)**
 
 ---
 
