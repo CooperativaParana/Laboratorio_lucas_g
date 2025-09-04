@@ -17,6 +17,11 @@ import {
   Alert,
   AlertIcon,
   Badge,
+  Select,
+  Textarea,
+  FormControl,
+  FormLabel,
+  FormHelperText,
   Container,
   Heading,
   HStack,
@@ -51,6 +56,8 @@ const ReportePorcentajes = () => {
   const [currentView, setCurrentView] = useState('lista'); // 'lista' o 'reporte'
   const [selectedPool, setSelectedPool] = useState(null);
   const [poolAnalisis, setPoolAnalisis] = useState([]);
+  const [tipoSeleccionado, setTipoSeleccionado] = useState('');
+  const [observacion, setObservacion] = useState('');
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -152,6 +159,8 @@ const ReportePorcentajes = () => {
     setCurrentView('lista');
     setSelectedPool(null);
     setPoolAnalisis([]);
+    setTipoSeleccionado('');
+    setObservacion('');
   };
 
   const handleVolverMenu = () => {
@@ -159,13 +168,134 @@ const ReportePorcentajes = () => {
   };
 
   const handleDescargarPDF = () => {
-    toast({
-      title: 'Función en desarrollo',
-      description: 'La descarga de PDF estará disponible próximamente',
-      status: 'info',
-      duration: 3000,
-      isClosable: true,
-    });
+    const exportar = async () => {
+      try {
+        const [{ jsPDF }, autoTableModule] = await Promise.all([
+          import('jspdf'),
+          import('jspdf-autotable')
+        ]);
+
+        const doc = new jsPDF({ unit: 'pt' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        // Título
+        doc.setFontSize(16);
+        doc.text('Reporte Melisopalinológico', pageWidth / 2, 40, { align: 'center' });
+
+        // Información del Estudio
+        doc.setFontSize(11);
+        const infoLines = [
+          `Estudio ID: ${selectedPool?.id ?? 'N/A'}`,
+          `Protocolo/ID: ${selectedPool?.num_registro || `Pool ${selectedPool?.id}`}`,
+          `Fecha de Análisis: ${selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES') : 'Sin fecha'}`,
+          `Analista: ${selectedPool?.analista ? `${selectedPool.analista.nombres || ''} ${selectedPool.analista.apellidos || ''}`.trim() || 'N/A' : 'N/A'}`,
+          `Tipo (selección): ${tipoSeleccionado || determinarTipoFloral.tipo}`,
+          `Observación: ${observacion || '—'}`
+        ];
+        let y = 70;
+        infoLines.forEach((linea) => {
+          doc.text(linea, 40, y);
+          y += 16;
+        });
+
+        // Tabla de especies
+        const headers = [['Nombre Científico', 'Nombre Vulgar', 'Familia', 'Cantidad', 'Porcentaje']];
+        const rows = calcularPorcentajesPool.map(e => [
+          e.nombre_cientifico,
+          e.nombre_comun,
+          e.familia,
+          String(e.cantidad_granos),
+          `${e.porcentaje.toFixed(1)}%`
+        ]);
+
+        autoTableModule.default(doc, {
+          head: headers,
+          body: rows,
+          startY: y + 10,
+          styles: { fontSize: 9 },
+          headStyles: { fillColor: [49, 130, 206] },
+        });
+
+        doc.save(`reporte_palinologico_${selectedPool?.id || 'estudio'}.pdf`);
+      } catch (err) {
+        toast({
+          title: 'Dependencias faltantes para PDF',
+          description: 'Instala: npm i jspdf jspdf-autotable',
+          status: 'warning',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    };
+
+    if (!selectedPool) {
+      toast({
+        title: 'Selecciona un estudio',
+        description: 'Abre un reporte antes de exportar a PDF',
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    exportar();
+  };
+
+  const handleDescargarExcel = () => {
+    const exportar = async () => {
+      try {
+        const XLSX = await import('xlsx');
+
+        // Armar datos
+        const encabezado = [{
+          Estudio_ID: selectedPool?.id ?? 'N/A',
+          Protocolo_o_ID: selectedPool?.num_registro || `Pool ${selectedPool?.id}`,
+          Fecha_Analisis: selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES') : 'Sin fecha',
+          Analista: selectedPool?.analista ? `${selectedPool.analista.nombres || ''} ${selectedPool.analista.apellidos || ''}`.trim() || 'N/A' : 'N/A',
+          Tipo_Seleccion: tipoSeleccionado || determinarTipoFloral.tipo,
+          Observacion: observacion || ''
+        }];
+
+        const especies = calcularPorcentajesPool.map(e => ({
+          Nombre_Cientifico: e.nombre_cientifico,
+          Nombre_Vulgar: e.nombre_comun,
+          Familia: e.familia,
+          Cantidad_Granos: e.cantidad_granos,
+          Porcentaje: Number(e.porcentaje.toFixed(1))
+        }));
+
+        const wb = XLSX.utils.book_new();
+        const wsInfo = XLSX.utils.json_to_sheet(encabezado);
+        XLSX.utils.book_append_sheet(wb, wsInfo, 'Estudio');
+
+        const wsEspecies = XLSX.utils.json_to_sheet(especies);
+        XLSX.utils.book_append_sheet(wb, wsEspecies, 'Especies');
+
+        XLSX.writeFile(wb, `reporte_palinologico_${selectedPool?.id || 'estudio'}.xlsx`);
+      } catch (err) {
+        toast({
+          title: 'Dependencias faltantes para Excel',
+          description: 'Instala: npm i xlsx',
+          status: 'warning',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+    };
+
+    if (!selectedPool) {
+      toast({
+        title: 'Selecciona un estudio',
+        description: 'Abre un reporte antes de exportar a Excel',
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    exportar();
   };
 
   // Calcular porcentajes por especie para el pool seleccionado (excluyendo especies con marca especial)
@@ -443,6 +573,15 @@ const ReportePorcentajes = () => {
               >
                 Descargar PDF
               </Button>
+              <Button
+                leftIcon={<DownloadIcon />}
+                colorScheme="green"
+                size="sm"
+                onClick={handleDescargarExcel}
+                order={{ base: 3, md: 3 }}
+              >
+                Descargar Excel
+              </Button>
             </Flex>
           </Box>
 
@@ -515,21 +654,44 @@ const ReportePorcentajes = () => {
                   </VStack>
                 </GridItem>
                 <GridItem colSpan={{ base: 1, md: 2, lg: 2 }}>
-                  <VStack align="start" spacing={1}>
-                    <Text fontSize="sm" fontWeight="bold" color="gray.600">
-                      Tipo de Miel:
-                    </Text>
-                    <Badge 
-                      colorScheme={determinarTipoFloral.tipo === 'MONOFLORAL' ? 'green' : 'orange'} 
-                      fontSize="md" 
-                      px={3} 
-                      py={1}
-                    >
-                      {determinarTipoFloral.tipo}
-                    </Badge>
-                    <Text fontSize="sm" color="gray.600" mt={1}>
-                      {determinarTipoFloral.descripcion}
-                    </Text>
+                  <VStack align="start" spacing={3} w="full">
+                    <FormControl>
+                      <FormLabel fontSize="sm" color="gray.600">Tipo de Miel (selección del analista):</FormLabel>
+                      <Select
+                        placeholder="Seleccione tipo"
+                        value={tipoSeleccionado}
+                        onChange={(e) => setTipoSeleccionado(e.target.value)}
+                        maxW={{ base: 'full', md: '300px' }}
+                      >
+                        <option value="MONOFLORAL">Monofloral</option>
+                        <option value="MULTIFLORAL">Multifloral</option>
+                      </Select>
+                      <FormHelperText>
+                        Sugerencia automática: {determinarTipoFloral.tipo} — {determinarTipoFloral.descripcion}
+                      </FormHelperText>
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel fontSize="sm" color="gray.600">Observación</FormLabel>
+                      <Textarea
+                        value={observacion}
+                        onChange={(e) => setObservacion(e.target.value)}
+                        placeholder="Describa el criterio utilizado (p. ej., especie X considerada monofloral a ≥70%, literatura, experiencia, etc.)"
+                        rows={3}
+                      />
+                    </FormControl>
+
+                    <HStack>
+                      <Text fontSize="sm" fontWeight="bold" color="gray.600">Selección actual:</Text>
+                      <Badge 
+                        colorScheme={(tipoSeleccionado || determinarTipoFloral.tipo) === 'MONOFLORAL' ? 'green' : 'orange'}
+                        fontSize="md"
+                        px={3}
+                        py={1}
+                      >
+                        {tipoSeleccionado || determinarTipoFloral.tipo}
+                      </Badge>
+                    </HStack>
                   </VStack>
                 </GridItem>
               </Grid>
@@ -712,6 +874,15 @@ const ReportePorcentajes = () => {
               width={{ base: "full", md: "auto" }}
             >
               Generar PDF
+            </Button>
+            <Button
+              leftIcon={<DownloadIcon />}
+              colorScheme="green"
+              onClick={handleDescargarExcel}
+              size={{ base: "md", md: "md" }}
+              width={{ base: "full", md: "auto" }}
+            >
+              Generar Excel
             </Button>
           </Flex>
         </VStack>
