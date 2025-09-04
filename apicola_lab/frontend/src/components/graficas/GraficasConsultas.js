@@ -225,7 +225,7 @@ const GraficasConsultas = () => {
     );
   }
 
-  const { pool_info, pie_chart, bar_chart, scatter_plot } = data;
+  const { pool_info, pie_chart, bar_chart } = data;
 
   // Configuración para el gráfico de torta
   const pieChartData = {
@@ -321,69 +321,6 @@ const GraficasConsultas = () => {
     }
   };
 
-  // Configuración para el gráfico temporal (Y: especies, X: meses)
-  const yCategories = Array.from(new Set(scatter_plot.data.map(item => item.x)));
-
-  const scatterChartData = {
-    datasets: [{
-      label: 'Frecuencia temporal por especie',
-      data: scatter_plot.data.map(item => ({
-        // X: mes (numérico), Y: especie (categoría)
-        x: item.y,
-        y: item.x
-      })),
-      backgroundColor: 'rgba(255, 99, 132, 0.6)',
-      borderColor: 'rgba(255, 99, 132, 1)',
-      pointRadius: scatter_plot.data.map(item => item.radio),
-      pointHoverRadius: scatter_plot.data.map(item => item.radio + 2)
-    }]
-  };
-
-  const scatterChartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const point = scatter_plot.data[context.dataIndex];
-            return [
-              `Especie: ${point.x}`,
-              `Mes: ${point.nombre_mes}`,
-              `Cantidad: ${point.cantidad} granos`
-            ];
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        title: {
-          display: true,
-          text: 'Meses'
-        },
-        min: 0,
-        max: 13,
-        ticks: {
-          stepSize: 1,
-          callback: function(value) {
-            const meses = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            return meses[value] || value;
-          }
-        }
-      },
-      y: {
-        type: 'category',
-        title: {
-          display: true,
-          text: 'Especies'
-        },
-        labels: yCategories
-      }
-    }
-  };
 
   return (
     <Flex minH="100vh" bg="transparent" p={4}>
@@ -408,20 +345,6 @@ const GraficasConsultas = () => {
 
         {/* Gráficos */}
         <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={6}>
-          {/* Gráfico Temporal (arriba) */}
-          <GridItem colSpan={{ base: 1, lg: 2 }}>
-            <Box bg="white" p={6} rounded="lg" boxShadow="lg" className="honeycomb-glow">
-              <Text fontSize="xl" fontWeight="bold" mb={4} textAlign="center">
-                Frecuencia Temporal por Especie
-              </Text>
-              <Text fontSize="sm" color="gray.600" mb={4} textAlign="center">
-                {scatter_plot.size_legend}
-              </Text>
-              <Box h="500px">
-                <Scatter data={scatterChartData} options={scatterChartOptions} />
-              </Box>
-            </Box>
-          </GridItem>
           {/* Gráfico de Torta */}
           <GridItem>
             <Box bg="white" p={6} rounded="lg" boxShadow="lg" className="honeycomb-glow">
@@ -445,8 +368,6 @@ const GraficasConsultas = () => {
               </Box>
             </Box>
           </GridItem>
-
-          {/* (Se movió el gráfico temporal arriba) */}
         </Grid>
       </Box>
     </Flex>
