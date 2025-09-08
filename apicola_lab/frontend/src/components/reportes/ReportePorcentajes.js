@@ -18,6 +18,7 @@ import {
   AlertIcon,
   Badge,
   Select,
+  Input,
   Textarea,
   FormControl,
   FormLabel,
@@ -58,6 +59,7 @@ const ReportePorcentajes = () => {
   const [poolAnalisis, setPoolAnalisis] = useState([]);
   const [tipoSeleccionado, setTipoSeleccionado] = useState('');
   const [observacion, setObservacion] = useState('');
+  const [solicitante, setSolicitante] = useState('');
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -151,6 +153,7 @@ const ReportePorcentajes = () => {
 
   const handleVerReporte = async (pool) => {
     setSelectedPool(pool);
+    setSolicitante(pool?.solicitante || '');
     await cargarAnalisisPool(pool.id);
     setCurrentView('reporte');
   };
@@ -161,6 +164,7 @@ const ReportePorcentajes = () => {
     setPoolAnalisis([]);
     setTipoSeleccionado('');
     setObservacion('');
+    setSolicitante('');
   };
 
   const handleVolverMenu = () => {
@@ -189,6 +193,7 @@ const ReportePorcentajes = () => {
           `Protocolo/ID: ${selectedPool?.num_registro || `Pool ${selectedPool?.id}`}`,
           `Fecha de Análisis: ${selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES') : 'Sin fecha'}`,
           `Analista: ${selectedPool?.analista ? `${selectedPool.analista.nombres || ''} ${selectedPool.analista.apellidos || ''}`.trim() || 'N/A' : 'N/A'}`,
+          `Solicitante: ${solicitante || '—'}`,
           `Tipo (selección): ${tipoSeleccionado || determinarTipoFloral.tipo}`,
           `Observación: ${observacion || '—'}`
         ];
@@ -253,6 +258,7 @@ const ReportePorcentajes = () => {
           Protocolo_o_ID: selectedPool?.num_registro || `Pool ${selectedPool?.id}`,
           Fecha_Analisis: selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES') : 'Sin fecha',
           Analista: selectedPool?.analista ? `${selectedPool.analista.nombres || ''} ${selectedPool.analista.apellidos || ''}`.trim() || 'N/A' : 'N/A',
+          Solicitante: solicitante || '',
           Tipo_Seleccion: tipoSeleccionado || determinarTipoFloral.tipo,
           Observacion: observacion || ''
         }];
@@ -536,22 +542,25 @@ const ReportePorcentajes = () => {
           {/* Header del Reporte */}
           <Box bg={headerBg} p={4} rounded="lg" color={headerTextColor} flexShrink={0} position="sticky" top={0} zIndex={10}>
             <Flex 
-              justify="space-between" 
+              justify="center" 
               align="center"
-              direction={{ base: "column", md: "row" }}
+              direction="row"
               spacing={{ base: 3, md: 0 }}
               gap={3}
+              position="relative"
             >
-              <Button 
-                leftIcon={<ChevronLeftIcon />} 
-                onClick={handleVolver} 
-                colorScheme="whiteAlpha" 
-                variant="outline"
-                size="sm"
-                order={{ base: 1, md: 1 }}
-              >
-                Volver a Lista
-              </Button>
+              <Box position="absolute" left={0}>
+                <Button 
+                  leftIcon={<ChevronLeftIcon />} 
+                  onClick={handleVolver} 
+                  colorScheme="whiteAlpha" 
+                  variant="outline"
+                  size="sm"
+                  order={{ base: 1, md: 1 }}
+                >
+                  Volver a Lista
+                </Button>
+              </Box>
               <VStack spacing={1} order={{ base: 2, md: 2 }}>
                 <Heading size={{ base: "md", md: "lg" }} textAlign="center">
                   Reporte Melisopalinológico
@@ -564,24 +573,6 @@ const ReportePorcentajes = () => {
                   })}
                 </Text>
               </VStack>
-              <Button
-                leftIcon={<DownloadIcon />}
-                colorScheme="teal"
-                size="sm"
-                onClick={handleDescargarPDF}
-                order={{ base: 3, md: 3 }}
-              >
-                Descargar PDF
-              </Button>
-              <Button
-                leftIcon={<DownloadIcon />}
-                colorScheme="green"
-                size="sm"
-                onClick={handleDescargarExcel}
-                order={{ base: 3, md: 3 }}
-              >
-                Descargar Excel
-              </Button>
             </Flex>
           </Box>
 
@@ -607,7 +598,7 @@ const ReportePorcentajes = () => {
                 <GridItem>
                   <VStack align="start" spacing={1}>
                     <Text fontSize="sm" fontWeight="bold" color="gray.600">
-                      Solicitante:
+                      Analista:
                     </Text>
                     <Text fontSize="md">
                       {selectedPool?.analista ? 
@@ -616,6 +607,20 @@ const ReportePorcentajes = () => {
                       }
                     </Text>
                   </VStack>
+                </GridItem>
+                <GridItem>
+                  <FormControl>
+                    <FormLabel fontSize="sm" color="gray.600">Solicitante:</FormLabel>
+                    <Input 
+                      placeholder="Nombre del solicitante (no se guarda en el sistema)"
+                      value={solicitante}
+                      onChange={(e) => setSolicitante(e.target.value)}
+                      size="sm"
+                    />
+                    <FormHelperText>
+                      Campo opcional para imprimir/exportar.
+                    </FormHelperText>
+                  </FormControl>
                 </GridItem>
                 <GridItem>
                   <VStack align="start" spacing={1}>
@@ -834,12 +839,12 @@ const ReportePorcentajes = () => {
                       Tipo de Miel
                     </Text>
                     <Badge 
-                      colorScheme={determinarTipoFloral.tipo === 'MONOFLORAL' ? 'green' : 'orange'} 
+                      colorScheme={(tipoSeleccionado || determinarTipoFloral.tipo) === 'MONOFLORAL' ? 'green' : 'orange'} 
                       fontSize="md" 
                       px={2} 
                       py={1}
                     >
-                      {determinarTipoFloral.tipo}
+                      {tipoSeleccionado || determinarTipoFloral.tipo}
                     </Badge>
                   </VStack>
                 </GridItem>
