@@ -60,6 +60,8 @@ const ReportePorcentajes = () => {
   const [tipoSeleccionado, setTipoSeleccionado] = useState('');
   const [observacion, setObservacion] = useState('');
   const [solicitante, setSolicitante] = useState('');
+  const [fechaCosecha, setFechaCosecha] = useState('');
+  const [sugeridaFechaCosecha, setSugeridaFechaCosecha] = useState('');
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -165,6 +167,8 @@ const ReportePorcentajes = () => {
     setTipoSeleccionado('');
     setObservacion('');
     setSolicitante('');
+    setFechaCosecha('');
+    setSugeridaFechaCosecha('');
   };
 
   const handleVolverMenu = () => {
@@ -194,6 +198,7 @@ const ReportePorcentajes = () => {
           `Fecha de Análisis: ${selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES') : 'Sin fecha'}`,
           `Analista: ${selectedPool?.analista ? `${selectedPool.analista.nombres || ''} ${selectedPool.analista.apellidos || ''}`.trim() || 'N/A' : 'N/A'}`,
           `Solicitante: ${solicitante || '—'}`,
+          `Fecha de Cosecha: ${fechaCosecha ? new Date(fechaCosecha).toLocaleDateString('es-ES') : (sugeridaFechaCosecha ? new Date(sugeridaFechaCosecha).toLocaleDateString('es-ES') : '—')}`,
           `Tipo (selección): ${tipoSeleccionado || determinarTipoFloral.tipo}`,
           `Observación: ${observacion || '—'}`
         ];
@@ -259,6 +264,7 @@ const ReportePorcentajes = () => {
           Fecha_Analisis: selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES') : 'Sin fecha',
           Analista: selectedPool?.analista ? `${selectedPool.analista.nombres || ''} ${selectedPool.analista.apellidos || ''}`.trim() || 'N/A' : 'N/A',
           Solicitante: solicitante || '',
+          Fecha_Cosecha: fechaCosecha || (sugeridaFechaCosecha ? new Date(sugeridaFechaCosecha).toLocaleDateString('es-ES') : ''),
           Tipo_Seleccion: tipoSeleccionado || determinarTipoFloral.tipo,
           Observacion: observacion || ''
         }];
@@ -369,6 +375,89 @@ const ReportePorcentajes = () => {
       };
     }
   }, [calcularPorcentajesPool]);
+
+  // Calcular sugerencia de Fecha de Cosecha a partir de fechas de extracción de tambores
+  useEffect(() => {
+    let cancelled = false;
+
+    const parseFechaToMs = (value) => {
+      if (!value || typeof value !== 'string') return NaN;
+      // Intento 1: ISO (YYYY-MM-DD o con tiempo)
+      const isoMs = Date.parse(value);
+      if (!Number.isNaN(isoMs)) return isoMs;
+      // Intento 2: DD/MM/YYYY
+      const slash = value.match(/^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*$/);
+      if (slash) {
+        const d = Number(slash[1]);
+        const m = Number(slash[2]) - 1;
+        const y = Number(slash[3]);
+        const ms = Date.UTC(y, m, d);
+        return Number.isNaN(ms) ? NaN : ms;
+      }
+      // Intento 3: YYYY/MM/DD o YYYY-MM-DD forzando UTC
+      const dash = value.match(/^\s*(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})\s*$/);
+      if (dash) {
+        const y = Number(dash[1]);
+        const m = Number(dash[2]) - 1;
+        const d = Number(dash[3]);
+        const ms = Date.UTC(y, m, d);
+        return Number.isNaN(ms) ? NaN : ms;
+      }
+      return NaN;
+    };
+
+    try {
+      const extraerFechasExtraccion = () => {
+        const fechas = [];
+        // 1) Si el pool trae tambores asociados
+        if (selectedPool && Array.isArray(selectedPool.tambores)) {
+          selectedPool.tambores.forEach(t => {
+            if (t && t.fecha_extraccion) {
+              const ms = parseFechaToMs(t.fecha_extraccion);
+              if (!Number.isNaN(ms)) fechas.push(ms);
+            }
+          });
+        }
+        // 2) Intentar desde poolAnalisis si incluyen referencia a tambor/muestra
+        if (fechas.length === 0 && Array.isArray(poolAnalisis)) {
+          poolAnalisis.forEach(item => {
+            // posibles rutas comunes
+            const posibles = [
+              item?.tambor?.fecha_extraccion,
+              item?.muestra?.tambor?.fecha_extraccion,
+              item?.muestra?.fecha_extraccion,
+            ];
+            posibles.forEach(f => {
+              const ms = parseFechaToMs(f);
+              if (!Number.isNaN(ms)) fechas.push(ms);
+            });
+          });
+        }
+        return fechas;
+      };
+
+      const fechasMs = extraerFechasExtraccion();
+      if (!cancelled) {
+        if (fechasMs.length > 0) {
+          const promedio = Math.round(fechasMs.reduce((a, b) => a + b, 0) / fechasMs.length);
+          const fechaIso = new Date(promedio).toISOString().slice(0, 10);
+          setSugeridaFechaCosecha(fechaIso);
+          if (!fechaCosecha) setFechaCosecha(fechaIso);
+        } else {
+          setSugeridaFechaCosecha('');
+        }
+      }
+    } catch (e) {
+      // Silenciar para no romper la UI si algún formato no esperado aparece
+      if (!cancelled) {
+        setSugeridaFechaCosecha('');
+      }
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPool, poolAnalisis]);
 
   if (loading) {
     return (
@@ -634,6 +723,21 @@ const ReportePorcentajes = () => {
                       }
                     </Text>
                   </VStack>
+                </GridItem>
+                <GridItem>
+                  <FormControl>
+                    <FormLabel fontSize="sm" color="gray.600">Fecha de Cosecha:</FormLabel>
+                    <Input 
+                      type="date"
+                      value={fechaCosecha}
+                      onChange={(e) => setFechaCosecha(e.target.value)}
+                      size="sm"
+                      maxW={{ base: 'full', md: '220px' }}
+                    />
+                    <FormHelperText>
+                      Sugerida: {sugeridaFechaCosecha ? new Date(sugeridaFechaCosecha).toLocaleDateString('es-ES') : '—'}
+                    </FormHelperText>
+                  </FormControl>
                 </GridItem>
                 <GridItem>
                   <VStack align="start" spacing={1}>
