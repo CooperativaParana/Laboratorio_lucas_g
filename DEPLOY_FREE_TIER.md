@@ -54,7 +54,7 @@ Template: Free tier
 ### **1.3 Configuración de instancia:**
 ```
 DB instance identifier: coadelpa-db
-Master username: postgres
+Master username: admincoadelpa
 Master password: [CREAR CONTRASEÑA SEGURA]
 ```
 
@@ -195,13 +195,13 @@ nano .env
 
 **Contenido del .env:**
 ```env
-DJANGO_SECRET_KEY=tu-secret-key-super-seguro
-DJANGO_ALLOWED_HOSTS=TU_IP_EC2,tu-dominio.com
-DB_NAME=apicola_lab_db
-DB_USER=postgres
-DB_PASSWORD=tu-password-rds
-DB_HOST=TU_ENDPOINT_RDS
-DB_PORT=5432
+DJANGO_SECRET_KEY= coadelpalimitadachaneares2025
+DJANGO_ALLOWED_HOSTS= TU_IP_EC2,tu-dominio.com
+DB_NAME= coadelpa-db
+DB_USER= admincoadelpa
+DB_PASSWORD= 9YsJZtOwhoyTTqC8s82U
+DB_HOST= coadelpa-db.cte8002k4q33.sa-east-1.rds.amazonaws.com
+DB_PORT= 5432
 ```
 
 ### **4.4 Construir y ejecutar:**
