@@ -81,7 +81,7 @@ const Login = () => {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/token/`,
-        { username, password },
+        { username: formData.username, password: formData.password },
         { headers: { 'Content-Type': 'application/json' } }
       );
       
