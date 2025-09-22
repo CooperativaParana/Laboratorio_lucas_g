@@ -30,7 +30,7 @@ const Reportes = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8001/api/estadisticas/', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/estadisticas/`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

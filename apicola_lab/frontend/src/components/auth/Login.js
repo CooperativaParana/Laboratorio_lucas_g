@@ -79,7 +79,11 @@ const Login = () => {
     }
     
     try {
-      const response = await axios.post('http://localhost:8001/api/token/', formData);
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/token/`,
+        { username, password },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
       
       if (response.data.access) {
         localStorage.setItem('token', response.data.access);

@@ -196,7 +196,7 @@ nano .env
 **Contenido del .env:**
 ```env
 DJANGO_SECRET_KEY= coadelpalimitadachaneares2025
-DJANGO_ALLOWED_HOSTS= TU_IP_EC2,tu-dominio.com
+DJANGO_ALLOWED_HOSTS= 15.229.13.79,15.229.13.79:8000,ec2-15-229-13-79.sa-east-1.compute.amazonaws.com
 DB_NAME= coadelpa-db
 DB_USER= admincoadelpa
 DB_PASSWORD= 9YsJZtOwhoyTTqC8s82U
@@ -219,9 +219,9 @@ cd apicola_lab/frontend
 
 # Configurar la URL del backend ANTES del build
 # Ejemplo (Windows PowerShell)
-$env:REACT_APP_API_URL="http://TU_IP_EC2:8000"
+$env:REACT_APP_API_URL="http://15.229.13.79:8000"
 
-# En Linux/Mac: export REACT_APP_API_URL=http://TU_IP_EC2:8000
+# En Linux/Mac: export REACT_APP_API_URL=http://15.229.13.79:8000
 
 npm ci
 npm run build
