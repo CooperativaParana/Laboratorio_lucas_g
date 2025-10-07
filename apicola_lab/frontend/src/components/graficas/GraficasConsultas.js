@@ -30,7 +30,7 @@ const GraficasConsultas = () => {
   const fetchPoolStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/pool/${poolId}/stats/`);
+      const response = await fetch(`${API_URL}/api/pool/${poolId}/stats/`);
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -50,7 +50,7 @@ const GraficasConsultas = () => {
       setLoading(true);
       setError(null);
 
-      const poolsRes = await fetch(`${API_URL}/pools/`);
+      const poolsRes = await fetch(`${API_URL}/api/pools/`);
       if (!poolsRes.ok) throw new Error(`Error ${poolsRes.status}: ${poolsRes.statusText}`);
       const poolsJson = await poolsRes.json();
       setPools(poolsJson);
@@ -58,7 +58,7 @@ const GraficasConsultas = () => {
       const stats = await Promise.all(
         poolsJson.map(async (p) => {
           try {
-            const res = await fetch(`${API_URL}/pool/${p.id}/stats/`);
+            const res = await fetch(`${API_URL}/api/pool/${p.id}/stats/`);
             if (!res.ok) return null;
             return res.json();
           } catch (_e) {

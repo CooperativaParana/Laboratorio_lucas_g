@@ -12,12 +12,12 @@ const ListaMuestras = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`${API_URL}/muestras/`)
+    axios.get(`${API_URL}/api/muestras/`)
       .then(res => {
         setMuestras(res.data);
         // Por cada muestra, consultar si tiene análisis palinológico
         res.data.forEach(muestra => {
-          axios.get(`${API_URL}/analisis-palinologicos/?pool=${muestra.id}`)
+          axios.get(`${API_URL}/api/analisis-palinologicos/?pool=${muestra.id}`)
             .then(resp => {
               setAnalisisPorPool(prev => ({ ...prev, [muestra.id]: resp.data.length > 0 }));
             })
@@ -27,7 +27,7 @@ const ListaMuestras = () => {
         });
       })
       .catch(err => console.error('Error al cargar muestras:', err));
-    axios.get(`${API_URL}/analistas/`)
+    axios.get(`${API_URL}/api/analistas/`)
       .then(res => setAnalistas(res.data))
       .catch(err => console.error('Error al cargar analistas:', err));
   }, []);

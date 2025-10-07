@@ -23,10 +23,10 @@ const AgregarMuestra1 = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`${API_URL}/analistas/`)
+    axios.get(`${API_URL}/api/analistas/`)
       .then(res => setAnalistas(res.data))
       .catch(err => setError('Error al cargar analistas: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
-    axios.get(`${API_URL}/tambores/`)
+    axios.get(`${API_URL}/api/tambores/`)
       .then(res => setTambores(res.data))
       .catch(err => setError('Error al cargar tambores: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
   }, []);
@@ -40,7 +40,7 @@ const AgregarMuestra1 = () => {
     setLoading(true);
     setError('');
     try {
-      await axios.post(`${API_URL}/analisis-fisicoquimicos/`, form);
+      await axios.post(`${API_URL}/api/analisis-fisicoquimicos/`, form);
       navigate('/muestras-fisicoquimicas');
     } catch (err) {
       setError('Error al crear la muestra: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));

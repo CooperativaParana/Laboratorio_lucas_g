@@ -14,7 +14,7 @@ const ListaMuestrasFisicoquimicas = () => {
   useEffect(() => {
     setLoading(true);
     setError('');
-    axios.get(`${API_URL}/analisis-fisicoquimicos/`)
+    axios.get(`${API_URL}/api/analisis-fisicoquimicos/`)
       .then(res => setMuestras(res.data))
       .catch(err => setError('Error al cargar las muestras: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)))
       .finally(() => setLoading(false));

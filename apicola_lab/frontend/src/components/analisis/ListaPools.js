@@ -37,7 +37,7 @@ const ListaPools = () => {
   const fetchPools = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/pools/`);
+      const response = await fetch(`${API_URL}/api/pools/`);
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);

@@ -32,9 +32,9 @@ const TodosAnalisis = () => {
       try {
         // Obtener muestras palinológicas y fisicoquímicas
         const [palinoRes, fisicoRes, analistasRes] = await Promise.all([
-          axios.get(`${API_URL}/muestras/`),
-          axios.get(`${API_URL}/analisis-fisicoquimicos/`),
-          axios.get(`${API_URL}/analistas/`)
+          axios.get(`${API_URL}/api/muestras/`),
+          axios.get(`${API_URL}/api/analisis-fisicoquimicos/`),
+          axios.get(`${API_URL}/api/analistas/`)
         ]);
 
         // Procesar muestras palinológicas

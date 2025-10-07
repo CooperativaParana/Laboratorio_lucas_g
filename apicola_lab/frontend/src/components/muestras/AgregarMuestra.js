@@ -23,12 +23,12 @@ const AgregarMuestra = () => {
 
   useEffect(() => {
     // Obtener la lista de analistas
-    axios.get(`${API_URL}/analistas/`)
+    axios.get(`${API_URL}/api/analistas/`)
       .then(res => setAnalistas(res.data))
       .catch(err => setError('Error al cargar analistas: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
     
     // Obtener solo tambores disponibles (estado_analisis_palinologico = false)
-    axios.get(`${API_URL}/tambores/?disponibles=true`)
+    axios.get(`${API_URL}/api/tambores/?disponibles=true`)
       .then(res => setTambores(res.data))
       .catch(err => setError('Error al cargar tambores: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
   }, []);
@@ -86,12 +86,12 @@ const AgregarMuestra = () => {
    
     try {
       // Crear el pool (muestra)
-      const res = await axios.post(`${API_URL}/muestras/`, form);
+      const res = await axios.post(`${API_URL}/api/muestras/`, form);
       const poolId = res.data.id;
       
       // Asociar tambores al pool y actualizar su estado
       await Promise.all(selectedTambores.map(tamborId =>
-        axios.post(`${API_URL}/contiene-pool/`, {
+        axios.post(`${API_URL}/api/contiene-pool/`, {
           pool: poolId,
           tambor: tamborId,
           fecha_asociacion: form.fecha_analisis
@@ -100,7 +100,7 @@ const AgregarMuestra = () => {
 
       // Actualizar el estado de los tambores a True (asignados)
       await Promise.all(selectedTambores.map(tamborId =>
-        axios.patch(`${API_URL}/tambores/${tamborId}/`, {
+        axios.patch(`${API_URL}/api/tambores/${tamborId}/`, {
           estado_analisis_palinologico: true
         })
       ));
@@ -119,7 +119,7 @@ const AgregarMuestra = () => {
       setSelectedTambores([]);
       
       // Recargar tambores disponibles
-      axios.get(`${API_URL}/tambores/?disponibles=true`)
+      axios.get(`${API_URL}/api/tambores/?disponibles=true`)
         .then(res => setTambores(res.data))
         .catch(err => console.error('Error al recargar tambores:', err));
 

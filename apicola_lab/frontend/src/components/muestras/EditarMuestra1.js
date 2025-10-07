@@ -24,13 +24,13 @@ const EditarMuestra1 = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`${API_URL}/analistas/`)
+    axios.get(`${API_URL}/api/analistas/`)
       .then(res => setAnalistas(res.data))
       .catch(err => setError('Error al cargar analistas: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
-    axios.get(`${API_URL}/tambores/`)
+    axios.get(`${API_URL}/api/tambores/`)
       .then(res => setTambores(res.data))
       .catch(err => setError('Error al cargar tambores: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
-    axios.get(`${API_URL}/analisis-fisicoquimicos/${id}/`)
+    axios.get(`${API_URL}/api/analisis-fisicoquimicos/${id}/`)
       .then(res => setForm(res.data))
       .catch(err => setError('Error al cargar la muestra: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
   }, [id]);
@@ -44,7 +44,7 @@ const EditarMuestra1 = () => {
     setLoading(true);
     setError('');
     try {
-      await axios.put(`${API_URL}/analisis-fisicoquimicos/${id}/`, form);
+      await axios.put(`${API_URL}/api/analisis-fisicoquimicos/${id}/`, form);
       navigate('/muestras-fisicoquimicas');
     } catch (err) {
       setError('Error al editar la muestra: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));

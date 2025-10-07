@@ -57,7 +57,7 @@ const VerAnalisis = () => {
     try {
       // Agregar timestamp para evitar caché sin usar headers problemáticos
       const timestamp = new Date().getTime();
-      const response = await axios.get(`${API_URL}/analisis-palinologicos/?_t=${timestamp}`);
+      const response = await axios.get(`${API_URL}/api/analisis-palinologicos/?_t=${timestamp}`);
       setAnalisis(response.data);
     } catch (err) {
       setError('Error al cargar los análisis: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));

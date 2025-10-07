@@ -93,7 +93,7 @@ const ReportePorcentajes = () => {
     try {
       // Obtener análisis palinológicos con información de pool y especie
       const timestamp = new Date().getTime();
-      const response = await axios.get(`${API_URL}/analisis-palinologicos/?_t=${timestamp}`);
+      const response = await axios.get(`${API_URL}/api/analisis-palinologicos/?_t=${timestamp}`);
       setAnalisis(response.data);
       
       // Extraer pools únicos de los análisis
@@ -140,7 +140,7 @@ const ReportePorcentajes = () => {
   const cargarAnalisisPool = async (poolId) => {
     try {
       const timestamp = new Date().getTime();
-      const response = await axios.get(`${API_URL}/analisis-palinologicos/?pool=${poolId}&_t=${timestamp}`);
+      const response = await axios.get(`${API_URL}/api/analisis-palinologicos/?pool=${poolId}&_t=${timestamp}`);
       setPoolAnalisis(response.data);
     } catch (err) {
       toast({

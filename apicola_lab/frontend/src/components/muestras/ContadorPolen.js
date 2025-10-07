@@ -26,7 +26,7 @@ const ContadorPolen = () => {
   const columns = useBreakpointValue({ base: 1, md: 1 });
 
   useEffect(() => {
-    axios.get(`${API_URL}/especies/`)
+    axios.get(`${API_URL}/api/especies/`)
       .then(res => {
         // Ordenar alfabéticamente por nombre_cientifico
         const especiesOrdenadas = res.data.sort((a, b) => a.nombre_cientifico.localeCompare(b.nombre_cientifico));
@@ -112,7 +112,7 @@ const ContadorPolen = () => {
         
         console.log('Enviando datos:', datosAGuardar); // Debug
         
-        await axios.post(`${API_URL}/analisis-palinologicos/`, datosAGuardar);
+        await axios.post(`${API_URL}/api/analisis-palinologicos/`, datosAGuardar);
       }
       setSuccess(true);
       setTimeout(() => navigate('/muestras'), 1200);

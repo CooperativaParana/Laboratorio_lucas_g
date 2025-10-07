@@ -26,15 +26,15 @@ const EditarMuestra = () => {
 
   useEffect(() => {
     // Cargar especies y análisis actuales
-    axios.get(`${API_URL}/especies/`)
+    axios.get(`${API_URL}/api/especies/`)
       .then(res => setEspecies(res.data))
       .catch(err => setError('Error al cargar especies: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message)));
-    axios.get(`${API_URL}/muestras/${id}/`)
+    axios.get(`${API_URL}/api/muestras/${id}/`)
       .then(res => {
         setFechaAnalisis(res.data.fecha_analisis || '');
       })
       .catch(() => setFechaAnalisis(''));
-    axios.get(`${API_URL}/analisis-palinologicos/?pool=${id}`)
+    axios.get(`${API_URL}/api/analisis-palinologicos/?pool=${id}`)
       .then(res => {
         setAnalisis(res.data);
         // Extraer solo los IDs de las especies, no los objetos completos
@@ -120,7 +120,7 @@ const EditarMuestra = () => {
           
           console.log('Actualizando análisis:', analisisExistente.id, "datos actualizacion", datosActualizacion);
           
-          await axios.put(`${API_URL}/analisis-palinologicos/${analisisExistente.id}/`, datosActualizacion);
+          await axios.put(`${API_URL}/api/analisis-palinologicos/${analisisExistente.id}/`, datosActualizacion);
         } else {
           // POST para crear - asegurar que especie sea solo el ID
           const datosCreacion = {
@@ -136,7 +136,7 @@ const EditarMuestra = () => {
           
           console.log('Creando nuevo análisis:', datosCreacion);
           
-          await axios.post(`${API_URL}/analisis-palinologicos/`, datosCreacion);
+          await axios.post(`${API_URL}/api/analisis-palinologicos/`, datosCreacion);
         }
       }
       
@@ -145,7 +145,7 @@ const EditarMuestra = () => {
         const aEspecieId = a.especie.id || a.especie;
         if (!especiesSeleccionadas.some(e => e === aEspecieId)) {
           console.log('Eliminando análisis:', a.id);
-          await axios.delete(`${API_URL}/analisis-palinologicos/${a.id}/`);
+          await axios.delete(`${API_URL}/api/analisis-palinologicos/${a.id}/`);
         }
       }
       
@@ -161,7 +161,7 @@ const EditarMuestra = () => {
 
   const handleFechaAnalisisSave = async () => {
     try {
-      await axios.patch(`${API_URL}/muestras/${id}/`, { fecha_analisis: fechaAnalisis });
+      await axios.patch(`${API_URL}/api/muestras/${id}/`, { fecha_analisis: fechaAnalisis });
       setEditandoFecha(false);
     } catch (err) {
       setError('Error al actualizar la fecha de análisis: ' + (err.response?.data ? JSON.stringify(err.response.data) : err.message));
