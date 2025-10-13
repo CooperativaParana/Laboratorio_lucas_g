@@ -395,7 +395,7 @@ psql -h TU_ENDPOINT_RDS -U postgres -d apicola_lab_db
 
 ---
 
-## 🧊 (Opcional) **CloudFront delante de S3 para HTTPS y caché**
+## 🧊 **CloudFront delante de S3 para HTTPS y caché**
 
 ### **CF.1 Crear distribución CloudFront:**
 - Origin: tu bucket S3 del frontend (mejor el “Static website endpoint”)
