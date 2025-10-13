@@ -329,7 +329,8 @@ curl http://localhost:8000/health/
 # Debería devolver: {"status": "healthy", "service": "apicola_lab"}
 
 # Desde tu navegador:
-http://TU_IP_EC2:8000/health/
+```bash
+http://15.229.13.79:8000/health/
 ```
 
 ### **6.2 Ver logs:**
@@ -394,26 +395,6 @@ psql -h TU_ENDPOINT_RDS -U postgres -d apicola_lab_db
 
 ---
 
-## 🔄 **Escalado después del Free Tier:**
-
-### **Opción 1: EC2 más grande**
-```
-t3.small: 2 vCPU, 2 GB RAM (~$15/mes)
-t3.medium: 2 vCPU, 4 GB RAM (~$30/mes)
-```
-
-### **Opción 2: RDS más grande**
-```
-db.t3.small: 2 vCPU, 2 GB RAM (~$25/mes)
-db.t3.medium: 2 vCPU, 4 GB RAM (~$50/mes)
-```
-
-### **Opción 3: Load Balancer**
-- **ALB**: ~$16/mes
-- **Múltiples EC2** para alta disponibilidad
-
----
-
 ## 🧊 (Opcional) **CloudFront delante de S3 para HTTPS y caché**
 
 ### **CF.1 Crear distribución CloudFront:**
@@ -428,34 +409,6 @@ db.t3.medium: 2 vCPU, 4 GB RAM (~$50/mes)
 ### **CF.3 Actualiza tu app:**
 - Cambia los enlaces del frontend al dominio de CloudFront o tu dominio propio
 - Actualiza `CSRF_TRUSTED_ORIGINS` y `CORS_ALLOWED_ORIGINS` en el backend con el dominio de CloudFront o tu dominio
-
----
-
-## 📚 **Recursos adicionales:**
-
-### **Documentación oficial:**
-- [AWS Free Tier](https://aws.amazon.com/free/)
-- [EC2 User Guide](https://docs.aws.amazon.com/ec2/latest/userguide/)
-- [RDS User Guide](https://docs.aws.amazon.com/rds/latest/userguide/)
-
-### **Videos tutoriales:**
-- YouTube: "AWS Free Tier Tutorial"
-- YouTube: "Deploy Django to EC2"
-
----
-
-## 🎯 **Resumen de pasos:**
-
-1. ✅ **Crear RDS PostgreSQL** (free tier)
-2. ✅ **Crear EC2 t2.micro** (free tier)  
-3. ✅ **Configurar Security Groups**
-4. ✅ **Conectar por SSH**
-5. ✅ **Instalar Docker + Docker Compose**
-6. ✅ **Desplegar backend (Django) en EC2**
-7. ✅ **Desplegar frontend (React) en S3**
-8. ✅ **Configurar variables de entorno**
-9. ✅ **Verificar funcionamiento (API y frontend)**
-10. ✅ **Configurar dominio/CloudFront (opcional)**
 
 ---
 
@@ -476,15 +429,3 @@ db.t3.medium: 2 vCPU, 4 GB RAM (~$50/mes)
 - Verificar endpoint de RDS
 - Verificar credenciales
 
----
-
-## 🎉 **¡Listo!**
-
-Tu aplicación Django estará corriendo en AWS Free Tier usando:
-- **EC2** para el backend
-- **RDS** para la base de datos  
-- **S3** para archivos estáticos/media
-
-**Total costo: $0 por 12 meses** 🆓
-
-¿Tienes alguna duda específica sobre algún paso?
