@@ -208,6 +208,63 @@ const ReportePorcentajes = () => {
           y += 16;
         });
 
+        // Sección de Tambores del Estudio
+        const tambores = Array.isArray(selectedPool?.tambores) ? selectedPool.tambores : [];
+        if (tambores.length > 0) {
+          y += 10;
+          doc.setFontSize(12);
+          doc.text('Tambores que componen la muestra', 40, y);
+          y += 6;
+
+          const headersTambores = [[
+            'ID Tambor',
+            'Código',
+            'Apiario(s)',
+            'Apicultor',
+            'Fecha de Extracción',
+            'Observaciones'
+          ]];
+
+          const rowsTambores = tambores.map(t => {
+            const nombresApiarios = Array.isArray(t?.apiarios) && t.apiarios.length > 0
+              ? t.apiarios.map(a => a?.nombre_apiario || a?.nombre || '').filter(Boolean).join(', ')
+              : (t?.apiario?.nombre || t?.apiario_nombre || t?.apiario || '—');
+            const primerApiario = Array.isArray(t?.apiarios) && t.apiarios.length > 0 ? t.apiarios[0] : null;
+            const apicultorNombre = primerApiario?.apicultor
+              ? `${primerApiario.apicultor.nombre || ''} ${primerApiario.apicultor.apellido || ''}`.trim() || '—'
+              : (t?.apicultor_nombre || t?.productor || '—');
+            const fechaRaw = t?.fecha_de_extraccion || t?.fecha_extraccion;
+            const fechaExt = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-ES') : '—';
+            return [
+              String(t?.id ?? '—'),
+              String(t?.codigo || t?.numero || t?.identificador || '—'),
+              String(nombresApiarios || '—'),
+              String(apicultorNombre),
+              String(fechaExt),
+              String(t?.observaciones || '—')
+            ];
+          });
+
+          autoTableModule.default(doc, {
+            head: headersTambores,
+            body: rowsTambores,
+            startY: y + 10,
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [49, 130, 206] },
+            bodyStyles: { valign: 'middle' },
+            columnStyles: {
+              0: { cellWidth: 70 },
+              1: { cellWidth: 80 },
+              2: { cellWidth: 120 },
+              3: { cellWidth: 140 },
+              4: { cellWidth: 90 },
+              5: { cellWidth: 'auto' }
+            }
+          });
+
+          y = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 10 : y + 20;
+        }
+
         // Tabla de especies
         const headers = [['Nombre Científico', 'Nombre Vulgar', 'Familia', 'Cantidad', 'Porcentaje']];
         const rows = calcularPorcentajesPool.map(e => [
@@ -225,6 +282,30 @@ const ReportePorcentajes = () => {
           styles: { fontSize: 9 },
           headStyles: { fillColor: [49, 130, 206] },
         });
+
+        // Tabla de especies con marca especial (si existe)
+        if (calcularMarcasEspecialesPool.length > 0) {
+          const startYMarcas = (doc.lastAutoTable?.finalY || y) + 20;
+          doc.setFontSize(12);
+          doc.text('Especies con marca especial (no incluidas en % de miel)', 40, startYMarcas);
+
+          const headersMarcas = [['Nombre Científico', 'Nombre Vulgar', 'Familia', 'Cantidad', 'Marca Especial']];
+          const rowsMarcas = calcularMarcasEspecialesPool.map(e => [
+            e.nombre_cientifico,
+            e.nombre_comun,
+            e.familia,
+            String(e.cantidad_granos),
+            e.marca_especial || '—'
+          ]);
+
+          autoTableModule.default(doc, {
+            head: headersMarcas,
+            body: rowsMarcas,
+            startY: startYMarcas + 10,
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [156, 81, 182] },
+          });
+        }
 
         doc.save(`reporte_palinologico_${selectedPool?.id || 'estudio'}.pdf`);
       } catch (err) {
@@ -283,6 +364,45 @@ const ReportePorcentajes = () => {
 
         const wsEspecies = XLSX.utils.json_to_sheet(especies);
         XLSX.utils.book_append_sheet(wb, wsEspecies, 'Especies');
+
+        // Hoja adicional: Tambores
+        const tambores = Array.isArray(selectedPool?.tambores) ? selectedPool.tambores : [];
+        if (tambores.length > 0) {
+          const tamboresRows = tambores.map(t => {
+            const nombresApiarios = Array.isArray(t?.apiarios) && t.apiarios.length > 0
+              ? t.apiarios.map(a => a?.nombre_apiario || a?.nombre || '').filter(Boolean).join(', ')
+              : (t?.apiario?.nombre || t?.apiario_nombre || t?.apiario || '');
+            const primerApiario = Array.isArray(t?.apiarios) && t.apiarios.length > 0 ? t.apiarios[0] : null;
+            const apicultorNombre = primerApiario?.apicultor
+              ? `${primerApiario.apicultor.nombre || ''} ${primerApiario.apicultor.apellido || ''}`.trim()
+              : (t?.apicultor_nombre || t?.productor || '');
+            const fechaRaw = t?.fecha_de_extraccion || t?.fecha_extraccion;
+            const fechaExt = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-ES') : '';
+            return {
+              Tambor_ID: t?.id ?? '',
+              Codigo_o_Numero: t?.codigo || t?.numero || t?.identificador || '',
+              Apiarios: nombresApiarios,
+              Apicultor_o_Productor: apicultorNombre,
+              Fecha_de_Extraccion: fechaExt,
+              Observaciones: t?.observaciones || ''
+            };
+          });
+          const wsTambores = XLSX.utils.json_to_sheet(tamboresRows);
+          XLSX.utils.book_append_sheet(wb, wsTambores, 'Tambores');
+        }
+
+        // Hoja adicional: Marcas Especiales
+        if (calcularMarcasEspecialesPool.length > 0) {
+          const marcasRows = calcularMarcasEspecialesPool.map(e => ({
+            Nombre_Cientifico: e.nombre_cientifico,
+            Nombre_Vulgar: e.nombre_comun,
+            Familia: e.familia,
+            Cantidad_Granos: e.cantidad_granos,
+            Marca_Especial: e.marca_especial || ''
+          }));
+          const wsMarcas = XLSX.utils.json_to_sheet(marcasRows);
+          XLSX.utils.book_append_sheet(wb, wsMarcas, 'MarcasEspeciales');
+        }
 
         XLSX.writeFile(wb, `reporte_palinologico_${selectedPool?.id || 'estudio'}.xlsx`);
       } catch (err) {
@@ -350,6 +470,39 @@ const ReportePorcentajes = () => {
 
     return Array.from(especiesMap.values())
       .sort((a, b) => b.porcentaje - a.porcentaje);
+  }, [poolAnalisis]);
+
+  // Especies con marca especial (listado informativo; no participan en % de miel)
+  const calcularMarcasEspecialesPool = useMemo(() => {
+    if (!poolAnalisis.length) return [];
+
+    const marcasMap = new Map();
+    const especiesMarcadas = poolAnalisis.filter(item =>
+      item.especie && item.cantidad_granos && item.marca_especial && item.marca_especial !== ''
+    );
+
+    especiesMarcadas.forEach(item => {
+      const especieId = item.especie.id;
+      const cantidad = item.cantidad_granos;
+      if (!marcasMap.has(especieId)) {
+        marcasMap.set(especieId, {
+          id: especieId,
+          nombre_cientifico: item.especie.nombre_cientifico || 'N/A',
+          nombre_comun: item.especie.nombre_comun || 'N/A',
+          familia: item.especie.familia || 'N/A',
+          cantidad_granos: 0,
+          marca_especial: new Set(),
+        });
+      }
+      const ref = marcasMap.get(especieId);
+      ref.cantidad_granos += cantidad;
+      if (item.marca_especial) ref.marca_especial.add(String(item.marca_especial));
+    });
+
+    return Array.from(marcasMap.values()).map(e => ({
+      ...e,
+      marca_especial: Array.from(e.marca_especial).join(', ')
+    }));
   }, [poolAnalisis]);
 
   // Determinar si es monofloral o multifloral
@@ -888,6 +1041,41 @@ const ReportePorcentajes = () => {
                           </Td>
                         </Tr>
                       ))}
+
+                      {calcularMarcasEspecialesPool.length > 0 && (
+                        <>
+                          <Tr>
+                            <Td borderWidth={1} borderColor={borderColor} colSpan={5} bg="purple.50">
+                              <Text fontWeight="bold" color="purple.700">
+                                Especies con marca especial (no aportan al porcentaje)
+                              </Text>
+                            </Td>
+                          </Tr>
+                          {calcularMarcasEspecialesPool.map((esp) => (
+                            <Tr key={`marca-${esp.id}`} _hover={{ bg: 'gray.50' }}>
+                              <Td borderWidth={1} borderColor={borderColor} fontWeight="semibold" color="purple.700">
+                                {esp.nombre_cientifico}
+                              </Td>
+                              <Td borderWidth={1} borderColor={borderColor}>
+                                {esp.nombre_comun}
+                              </Td>
+                              <Td borderWidth={1} borderColor={borderColor}>
+                                {esp.familia}
+                              </Td>
+                              <Td borderWidth={1} borderColor={borderColor} textAlign="center">
+                                <Badge colorScheme="purple" fontSize="sm">
+                                  {esp.cantidad_granos}
+                                </Badge>
+                              </Td>
+                              <Td borderWidth={1} borderColor={borderColor} textAlign="center">
+                                <Badge colorScheme="gray" fontSize="sm" px={2} py={1}>
+                                  —
+                                </Badge>
+                              </Td>
+                            </Tr>
+                          ))}
+                        </>
+                      )}
                     </Tbody>
                   </Table>
                 </Box>

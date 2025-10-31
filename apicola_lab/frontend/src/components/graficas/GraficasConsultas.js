@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, Flex, Text, VStack, HStack, Spinner, Alert, AlertIcon, Grid, GridItem } from '@chakra-ui/react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title, BarElement } from 'chart.js';
-import { Pie, Bar, Scatter } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title, BarElement, RadialLinearScale } from 'chart.js';
+import { Pie, Bar, Scatter, Radar } from 'react-chartjs-2';
 import ListaPools from '../analisis/ListaPools';
 
 // Registrar componentes de Chart.js
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title, BarElement);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title, BarElement, RadialLinearScale);
 
 const GraficasConsultas = () => {
   const { poolId } = useParams();
@@ -225,7 +225,7 @@ const GraficasConsultas = () => {
     );
   }
 
-  const { pool_info, pie_chart, bar_chart } = data;
+  const { pool_info, pie_chart } = data;
 
   // Configuración para el gráfico de torta
   const pieChartData = {
@@ -261,7 +261,7 @@ const GraficasConsultas = () => {
     }
   };
 
-  // Configuración para el gráfico de barras
+  // Configuración para el gráfico de barras (porcentajes)
   // Genera colores distintos por barra
   const barColorPalette = [
     'rgba(255, 99, 132, 0.6)',
@@ -277,17 +277,14 @@ const GraficasConsultas = () => {
   ];
 
   const barChartData = {
-    labels: bar_chart.labels,
-    datasets: bar_chart.datasets.map(dataset => {
-      const colors = bar_chart.labels.map((_, idx) => barColorPalette[idx % barColorPalette.length]);
-      const borderColors = colors.map(c => c.replace('0.6', '1'));
-      return {
-        ...dataset,
-        backgroundColor: colors,
-        borderColor: borderColors,
-        borderWidth: 1
-      };
-    })
+    labels: pie_chart.labels,
+    datasets: [{
+      label: 'Porcentaje por especie',
+      data: pie_chart.datasets[0].data,
+      backgroundColor: pie_chart.labels.map((_, idx) => barColorPalette[idx % barColorPalette.length]),
+      borderColor: pie_chart.labels.map((_, idx) => barColorPalette[idx % barColorPalette.length].replace('0.6', '1')),
+      borderWidth: 1
+    }]
   };
 
   const barChartOptions = {
@@ -299,7 +296,7 @@ const GraficasConsultas = () => {
       tooltip: {
         callbacks: {
           label: function(context) {
-            return `Cantidad: ${context.parsed.y} granos`;
+            return `Porcentaje: ${context.parsed.y}%`;
           }
         }
       }
@@ -307,9 +304,10 @@ const GraficasConsultas = () => {
     scales: {
       y: {
         beginAtZero: true,
+        max: 100,
         title: {
           display: true,
-          text: 'Cantidad de Granos'
+          text: 'Porcentaje (%)'
         }
       },
       x: {
@@ -317,6 +315,78 @@ const GraficasConsultas = () => {
           display: true,
           text: 'Especies'
         }
+      }
+    }
+  };
+
+  // Scatter de porcentaje (X) vs especies (Y)
+  const scaleRadiusPct = (p) => {
+    const minR = 4;
+    const maxR = 12;
+    const clamped = Math.max(0, Math.min(100, Number(p) || 0));
+    return minR + (clamped / 100) * (maxR - minR);
+  };
+
+  const scatterPorcentajeData = {
+    datasets: [{
+      label: 'Porcentaje por especie',
+      data: (pie_chart.labels || []).map((label, idx) => ({ x: pie_chart.datasets[0].data[idx] || 0, y: label })),
+      backgroundColor: 'rgba(54, 162, 235, 0.6)',
+      borderColor: 'rgba(54, 162, 235, 1)',
+      pointRadius: (pie_chart.datasets[0].data || []).map(v => scaleRadiusPct(v)),
+      pointHoverRadius: (pie_chart.datasets[0].data || []).map(v => scaleRadiusPct(v) + 2)
+    }]
+  };
+
+  const scatterPorcentajeOptions = {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const p = context.raw;
+            return [`Especie: ${p?.y ?? ''}`, `Porcentaje: ${p?.x ?? 0}%`];
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Porcentaje (%)' },
+        beginAtZero: true,
+        max: 100
+      },
+      y: {
+        type: 'category',
+        title: { display: true, text: 'Especies' },
+        labels: pie_chart.labels || []
+      }
+    }
+  };
+
+  // Radar chart de porcentajes por especie
+  const radarData = {
+    labels: pie_chart.labels,
+    datasets: [{
+      label: 'Porcentaje (%)',
+      data: pie_chart.datasets[0].data,
+      backgroundColor: 'rgba(153, 102, 255, 0.2)',
+      borderColor: 'rgba(153, 102, 255, 1)',
+      pointBackgroundColor: 'rgba(153, 102, 255, 1)'
+    }]
+  };
+
+  const radarOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: 'bottom' }
+    },
+    scales: {
+      r: {
+        beginAtZero: true,
+        suggestedMax: 100,
+        ticks: { showLabelBackdrop: false }
       }
     }
   };
@@ -357,14 +427,38 @@ const GraficasConsultas = () => {
             </Box>
           </GridItem>
 
-          {/* Gráfico de Barras */}
+          {/* Gráfico de Barras (Porcentajes) */}
           <GridItem>
             <Box bg="white" p={6} rounded="lg" boxShadow="lg" className="honeycomb-glow">
               <Text fontSize="xl" fontWeight="bold" mb={4} textAlign="center">
-                Cantidad de Granos por Especie
+                Porcentaje por Especie (%)
               </Text>
               <Box h="400px">
                 <Bar data={barChartData} options={barChartOptions} />
+              </Box>
+            </Box>
+          </GridItem>
+
+          {/* Scatter: Porcentaje (X) vs Especies (Y) */}
+          <GridItem>
+            <Box bg="white" p={6} rounded="lg" boxShadow="lg" className="honeycomb-glow">
+              <Text fontSize="xl" fontWeight="bold" mb={4} textAlign="center">
+                Porcentaje por Especie (Scatter)
+              </Text>
+              <Box h="400px">
+                <Scatter data={scatterPorcentajeData} options={scatterPorcentajeOptions} />
+              </Box>
+            </Box>
+          </GridItem>
+
+          {/* Radar: Porcentaje por Especie */}
+          <GridItem>
+            <Box bg="white" p={6} rounded="lg" boxShadow="lg" className="honeycomb-glow">
+              <Text fontSize="xl" fontWeight="bold" mb={4} textAlign="center">
+                Distribución de Porcentajes (Radar)
+              </Text>
+              <Box h="400px">
+                <Radar data={radarData} options={radarOptions} />
               </Box>
             </Box>
           </GridItem>
