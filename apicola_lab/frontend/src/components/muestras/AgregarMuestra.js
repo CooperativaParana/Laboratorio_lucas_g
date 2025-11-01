@@ -20,6 +20,7 @@ const AgregarMuestra = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Obtener la lista de analistas
@@ -267,7 +268,7 @@ const AgregarMuestra = () => {
                 <Button colorScheme="blue" type="submit" isLoading={loading} w="100%" leftIcon={<CheckCircleIcon boxSize={5} />}>
                   Crear Grupo
                 </Button>
-                <Button mt={2} colorScheme="gray" variant="outline" w="100%" onClick={() => window.location.href = '/muestras'}>
+                <Button mt={2} colorScheme="gray" variant="outline" w="100%" onClick={() => navigate('/muestras')}>
                   Ir a lista de Grupos
             </Button>
           </form>

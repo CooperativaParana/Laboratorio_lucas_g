@@ -227,12 +227,24 @@ const GraficasConsultas = () => {
 
   const { pool_info, pie_chart } = data;
 
+  // Filtrar especies que aportan al porcentaje (sin marca especial)
+  const maskSinMarca = (pie_chart?.labels || []).map((label) => {
+    const d = Array.isArray(pie_chart?.detailed_data)
+      ? pie_chart.detailed_data.find((it) => it.especie === label)
+      : null;
+    const marca = d?.marca_especial;
+    return !(marca && String(marca).trim() !== '');
+  });
+  const filteredLabels = (pie_chart?.labels || []).filter((_, idx) => maskSinMarca[idx]);
+  const filteredPercents = (pie_chart?.datasets?.[0]?.data || []).filter((_, idx) => maskSinMarca[idx]);
+  const filteredPieBg = (pie_chart?.datasets?.[0]?.backgroundColor || []).filter((_, idx) => maskSinMarca[idx]);
+
   // Configuración para el gráfico de torta
   const pieChartData = {
-    labels: pie_chart.labels,
+    labels: filteredLabels,
     datasets: [{
-      data: pie_chart.datasets[0].data,
-      backgroundColor: pie_chart.datasets[0].backgroundColor,
+      data: filteredPercents,
+      backgroundColor: filteredPieBg.length ? filteredPieBg : pie_chart.datasets[0].backgroundColor,
       borderWidth: 2,
       borderColor: '#fff'
     }]
@@ -253,7 +265,7 @@ const GraficasConsultas = () => {
           label: function(context) {
             const label = context.label || '';
             const value = context.parsed;
-            const detailedData = pie_chart.detailed_data.find(item => item.especie === label);
+            const detailedData = Array.isArray(pie_chart.detailed_data) ? pie_chart.detailed_data.find(item => item.especie === label) : null;
             return `${label}: ${value}% (${detailedData?.cantidad || 0} granos)`;
           }
         }
@@ -277,12 +289,12 @@ const GraficasConsultas = () => {
   ];
 
   const barChartData = {
-    labels: pie_chart.labels,
+    labels: filteredLabels,
     datasets: [{
       label: 'Porcentaje por especie',
-      data: pie_chart.datasets[0].data,
-      backgroundColor: pie_chart.labels.map((_, idx) => barColorPalette[idx % barColorPalette.length]),
-      borderColor: pie_chart.labels.map((_, idx) => barColorPalette[idx % barColorPalette.length].replace('0.6', '1')),
+      data: filteredPercents,
+      backgroundColor: filteredLabels.map((_, idx) => barColorPalette[idx % barColorPalette.length]),
+      borderColor: filteredLabels.map((_, idx) => barColorPalette[idx % barColorPalette.length].replace('0.6', '1')),
       borderWidth: 1
     }]
   };
@@ -330,11 +342,11 @@ const GraficasConsultas = () => {
   const scatterPorcentajeData = {
     datasets: [{
       label: 'Porcentaje por especie',
-      data: (pie_chart.labels || []).map((label, idx) => ({ x: pie_chart.datasets[0].data[idx] || 0, y: label })),
+      data: filteredLabels.map((label, idx) => ({ x: filteredPercents[idx] || 0, y: label })),
       backgroundColor: 'rgba(54, 162, 235, 0.6)',
       borderColor: 'rgba(54, 162, 235, 1)',
-      pointRadius: (pie_chart.datasets[0].data || []).map(v => scaleRadiusPct(v)),
-      pointHoverRadius: (pie_chart.datasets[0].data || []).map(v => scaleRadiusPct(v) + 2)
+      pointRadius: filteredPercents.map(v => scaleRadiusPct(v)),
+      pointHoverRadius: filteredPercents.map(v => scaleRadiusPct(v) + 2)
     }]
   };
 
@@ -360,17 +372,17 @@ const GraficasConsultas = () => {
       y: {
         type: 'category',
         title: { display: true, text: 'Especies' },
-        labels: pie_chart.labels || []
+        labels: filteredLabels || []
       }
     }
   };
 
   // Radar chart de porcentajes por especie
   const radarData = {
-    labels: pie_chart.labels,
+    labels: filteredLabels,
     datasets: [{
       label: 'Porcentaje (%)',
-      data: pie_chart.datasets[0].data,
+      data: filteredPercents,
       backgroundColor: 'rgba(153, 102, 255, 0.2)',
       borderColor: 'rgba(153, 102, 255, 1)',
       pointBackgroundColor: 'rgba(153, 102, 255, 1)'
