@@ -153,4 +153,4 @@ class TamborWithApiariosSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MuestraTambor
-        fields = ['id', 'num_registro', 'fecha_de_extraccion', 'apiarios']
+        fields = ['id', 'num_registro', 'fecha_de_extraccion', 'estado_analisis_palinologico', 'apiarios']
