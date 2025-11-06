@@ -415,7 +415,7 @@ const GraficasConsultas = () => {
             </Text>
             <HStack spacing={8} fontSize="md" color="gray.600">
               <Text><strong>Analista:</strong> {pool_info.analista}</Text>
-              <Text><strong>Fecha:</strong> {pool_info.fecha_analisis ? new Date(pool_info.fecha_analisis).toLocaleDateString('es-ES') : 'No especificada'}</Text>
+              <Text><strong>Fecha:</strong> {pool_info.fecha_analisis ? new Date(pool_info.fecha_analisis).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 'No especificada'}</Text>
               <Text><strong>Total Granos:</strong> {pool_info.total_granos}</Text>
               <Text><strong>Especies:</strong> {pool_info.total_especies}</Text>
             </HStack>

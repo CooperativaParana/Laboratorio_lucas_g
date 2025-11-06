@@ -62,7 +62,7 @@ const ListaPools = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'No especificada';
-    return new Date(dateString).toLocaleDateString('es-ES');
+    return new Date(dateString).toLocaleDateString('es-ES', { timeZone: 'UTC' });
   };
 
   if (loading) {

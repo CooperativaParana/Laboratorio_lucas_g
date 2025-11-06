@@ -173,7 +173,7 @@ const AgregarMuestra = () => {
                   const nombresApiarios = tambor.apiarios && tambor.apiarios.length > 0
                     ? tambor.apiarios.map(a => a.nombre_apiario).join(', ')
                     : '-';
-                  const fechaExtraccion = tambor.fecha_de_extraccion ? new Date(tambor.fecha_de_extraccion).toLocaleDateString() : '-';
+                  const fechaExtraccion = tambor.fecha_de_extraccion ? new Date(tambor.fecha_de_extraccion).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : '-';
                   const tipo = tambor.fecha_de_extraccion ? 'Interno' : 'Externo';
                   const badgeColor = tambor.fecha_de_extraccion ? 'green' : 'orange';
                   return (
@@ -218,7 +218,7 @@ const AgregarMuestra = () => {
                       const nombresApiarios = tambor.apiarios && tambor.apiarios.length > 0
                         ? tambor.apiarios.map(a => a.nombre_apiario).join(', ')
                         : '-';
-                  const fechaExtraccion = tambor.fecha_de_extraccion ? new Date(tambor.fecha_de_extraccion).toLocaleDateString() : '-';
+                  const fechaExtraccion = tambor.fecha_de_extraccion ? new Date(tambor.fecha_de_extraccion).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : '-';
                   const tipo = tambor.fecha_de_extraccion ? 'Interno' : 'Externo';
                   const badgeColor = tambor.fecha_de_extraccion ? 'green' : 'orange';
                       return (

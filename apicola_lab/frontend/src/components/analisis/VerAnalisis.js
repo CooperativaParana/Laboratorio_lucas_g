@@ -212,7 +212,7 @@ const VerAnalisis = () => {
                         </Td>
                         <Td borderWidth={1} borderColor={borderColor}>
                           {pool.fecha_analisis ? 
-                            new Date(pool.fecha_analisis).toLocaleDateString() : 
+                            new Date(pool.fecha_analisis).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 
                             'Sin fecha'
                           }
                         </Td>

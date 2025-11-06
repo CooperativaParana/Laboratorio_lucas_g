@@ -195,10 +195,10 @@ const ReportePorcentajes = () => {
         const infoLines = [
           `Estudio ID: ${selectedPool?.id ?? 'N/A'}`,
           `Protocolo/ID: ${selectedPool?.num_registro || `Pool ${selectedPool?.id}`}`,
-          `Fecha de Análisis: ${selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES') : 'Sin fecha'}`,
+          `Fecha de Análisis: ${selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 'Sin fecha'}`,
           `Analista: ${selectedPool?.analista ? `${selectedPool.analista.nombres || ''} ${selectedPool.analista.apellidos || ''}`.trim() || 'N/A' : 'N/A'}`,
           `Solicitante: ${solicitante || '—'}`,
-          `Fecha de Cosecha: ${fechaCosecha ? new Date(fechaCosecha).toLocaleDateString('es-ES') : (sugeridaFechaCosecha ? new Date(sugeridaFechaCosecha).toLocaleDateString('es-ES') : '—')}`,
+          `Fecha de Cosecha: ${fechaCosecha ? new Date(fechaCosecha).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : (sugeridaFechaCosecha ? new Date(sugeridaFechaCosecha).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : '—')}`,
           `Tipo (selección): ${tipoSeleccionado || determinarTipoFloral.tipo}`,
           `Observación: ${observacion || '—'}`
         ];
@@ -234,7 +234,7 @@ const ReportePorcentajes = () => {
               ? `${primerApiario.apicultor.nombre || ''} ${primerApiario.apicultor.apellido || ''}`.trim() || '—'
               : (t?.apicultor_nombre || t?.productor || '—');
             const fechaRaw = t?.fecha_de_extraccion || t?.fecha_extraccion;
-            const fechaExt = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-ES') : '—';
+            const fechaExt = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : '—';
             return [
               String(t?.id ?? '—'),
               String(t?.codigo || t?.numero || t?.identificador || '—'),
@@ -342,10 +342,10 @@ const ReportePorcentajes = () => {
         const encabezado = [{
           Estudio_ID: selectedPool?.id ?? 'N/A',
           Protocolo_o_ID: selectedPool?.num_registro || `Pool ${selectedPool?.id}`,
-          Fecha_Analisis: selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES') : 'Sin fecha',
+          Fecha_Analisis: selectedPool?.fecha_analisis ? new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 'Sin fecha',
           Analista: selectedPool?.analista ? `${selectedPool.analista.nombres || ''} ${selectedPool.analista.apellidos || ''}`.trim() || 'N/A' : 'N/A',
           Solicitante: solicitante || '',
-          Fecha_Cosecha: fechaCosecha || (sugeridaFechaCosecha ? new Date(sugeridaFechaCosecha).toLocaleDateString('es-ES') : ''),
+          Fecha_Cosecha: fechaCosecha || (sugeridaFechaCosecha ? new Date(sugeridaFechaCosecha).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : ''),
           Tipo_Seleccion: tipoSeleccionado || determinarTipoFloral.tipo,
           Observacion: observacion || ''
         }];
@@ -377,7 +377,7 @@ const ReportePorcentajes = () => {
               ? `${primerApiario.apicultor.nombre || ''} ${primerApiario.apicultor.apellido || ''}`.trim()
               : (t?.apicultor_nombre || t?.productor || '');
             const fechaRaw = t?.fecha_de_extraccion || t?.fecha_extraccion;
-            const fechaExt = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-ES') : '';
+            const fechaExt = fechaRaw ? new Date(fechaRaw).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : '';
             return {
               Tambor_ID: t?.id ?? '',
               Codigo_o_Numero: t?.codigo || t?.numero || t?.identificador || '',
@@ -737,7 +737,7 @@ const ReportePorcentajes = () => {
                           </Td>
                           <Td borderWidth={1} borderColor={borderColor}>
                             {pool.fecha_analisis ? 
-                              new Date(pool.fecha_analisis).toLocaleDateString('es-ES') : 
+                              new Date(pool.fecha_analisis).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 
                               'Sin fecha'
                             }
                           </Td>
@@ -871,7 +871,7 @@ const ReportePorcentajes = () => {
                     </Text>
                     <Text fontSize="md">
                       {selectedPool?.fecha_analisis ? 
-                        new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES') : 
+                        new Date(selectedPool.fecha_analisis).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 
                         'Sin fecha'
                       }
                     </Text>
@@ -888,7 +888,7 @@ const ReportePorcentajes = () => {
                       maxW={{ base: 'full', md: '220px' }}
                     />
                     <FormHelperText>
-                      Sugerida: {sugeridaFechaCosecha ? new Date(sugeridaFechaCosecha).toLocaleDateString('es-ES') : '—'}
+                      Sugerida: {sugeridaFechaCosecha ? new Date(sugeridaFechaCosecha).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : '—'}
                     </FormHelperText>
                   </FormControl>
                 </GridItem>
@@ -899,7 +899,7 @@ const ReportePorcentajes = () => {
                     </Text>
                     <Text fontSize="md">
                       {selectedPool?.created_at ? 
-                        new Date(selectedPool.created_at).toLocaleDateString('es-ES') : 
+                        new Date(selectedPool.created_at).toLocaleDateString('es-ES', { timeZone: 'UTC' }) : 
                         'N/A'
                       }
                     </Text>

@@ -236,7 +236,8 @@ const EditarMuestra = () => {
             {fechaAnalisis ? new Date(fechaAnalisis + 'T00:00:00').toLocaleDateString('es-ES', {
               year: 'numeric',
               month: '2-digit',
-              day: '2-digit'
+              day: '2-digit',
+              timeZone: 'UTC'
             }) : 'Sin fecha'}
           </Button>
         )}
